@@ -1,2 +1,2 @@
 # New-Event
-an android application used for people who want to be the host of life-time.
+an android application designed for people who want to be the host of time.
