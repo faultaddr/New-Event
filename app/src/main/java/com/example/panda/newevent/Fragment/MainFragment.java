@@ -13,7 +13,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.example.panda.newevent.R;
 import com.example.panda.newevent.adapter.MyListAdapter;
@@ -22,6 +25,10 @@ import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static android.view.View.GONE;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -31,14 +38,17 @@ import java.util.ArrayList;
  * Use the {@link MainFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MainFragment extends Fragment implements OnDateSelectedListener{
+public class MainFragment extends Fragment{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private ListView listview;
     private MaterialCalendarView calenderView;
     private FragmentTransaction fragmentTransaction;
+    private ImageButton backButton;
+    private TextView title;
+    private TextView editButton;
     //数组声明
-
+    private ArrayList<Date>listTime=new ArrayList<>();//时间
     private ArrayList<String> listTitle = new ArrayList<>();//事项标题
     private ArrayList<String> listContent = new ArrayList<>();//事项内容
     private int listDrawable[] = {R.drawable.greeimage, R.drawable.yellowimage, R.drawable.redimage};//事项紧急程度划分
@@ -55,6 +65,7 @@ public class MainFragment extends Fragment implements OnDateSelectedListener{
     // TODO: Rename and change types and number of parameters
     public static MainFragment newInstance(Bundle bundle) {
         MainFragment fragment = new MainFragment();
+        fragment.setTargetFragment(fragment,1);
         return fragment;
     }
 
@@ -81,17 +92,35 @@ public class MainFragment extends Fragment implements OnDateSelectedListener{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v=inflater.inflate(R.layout.main,container,false);
+        View parent=(LinearLayout)getActivity().findViewById(R.id.titlebar);
+        title=(TextView)parent.findViewById(R.id.title);
+        editButton=(TextView)parent.findViewById(R.id.editButton);
+        backButton=(ImageButton)parent.findViewById(R.id.backButton) ;
+
+        title.setText("待办");
+        editButton.setVisibility(View.INVISIBLE);
+        backButton.setVisibility(View.INVISIBLE);
         listview = (ListView)v.findViewById(R.id.mainlistView);
         calenderView = (MaterialCalendarView)v.findViewById(R.id.calendarView);
-        fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+
         //DetailFragment detailFragment=new DetailFragment();
         calenderView.setSelectionMode(MaterialCalendarView.SELECTION_MODE_MULTIPLE);
         final DetailFragment detailFragment = DetailFragment.newInstance(new Bundle());
-
+        calenderView.setSelectedDate(calenderView.getCurrentDate());
         //List<CalendarDay> calenderDay = calenderView.getSelectedDates();
-        CalendarDay calendarDay = calenderView.getCurrentDate();
+        List<CalendarDay> calendarDay = calenderView.getSelectedDates();
+        calenderView.setOnDateChangedListener(new OnDateSelectedListener() {
+            @Override
+            public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
 
-        onDateSelected(calenderView,calendarDay,true);
+                //listTime.add(date.getDate());
+                dialog(date);
+
+            }
+        });
+
+
+
         /*
 
         for (int i = 0; i < calenderDay.size(); i++) {
@@ -109,15 +138,16 @@ public class MainFragment extends Fragment implements OnDateSelectedListener{
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
+                fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
 
                 fragmentTransaction.add(R.id.detailContent, detailFragment);
-                fragmentTransaction.commitAllowingStateLoss();
+
                 listview.setVisibility(View.GONE);
                 calenderView.setVisibility(View.GONE);
-                setupActionBar();
-                fragmentTransaction.show(detailFragment);
 
+                fragmentTransaction.show(detailFragment);
+                fragmentTransaction.commitAllowingStateLoss();
+                fragmentTransaction.hide(getTargetFragment());
             }
         });
 
@@ -144,7 +174,7 @@ public class MainFragment extends Fragment implements OnDateSelectedListener{
         mListener = null;
     }
 
-    protected void dialog() {
+    protected void dialog(final CalendarDay calendarDay) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("确认添加日程安排？");
 
@@ -155,15 +185,18 @@ public class MainFragment extends Fragment implements OnDateSelectedListener{
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
+                calenderView.setSelectedDate(calendarDay);
                 Bundle bundle = new Bundle();
                 bundle.putString("content", "focus");
                 DetailFragment detailFragment = DetailFragment.newInstance(bundle);
+                fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.add(R.id.detailContent, detailFragment);
+
+                fragmentTransaction.show(detailFragment);
                 listview.setVisibility(View.GONE);
                 calenderView.setVisibility(View.GONE);
-                setupActionBar();
-                fragmentTransaction.commitAllowingStateLoss();
-                fragmentTransaction.show(detailFragment);
+                fragmentTransaction.commit();
+
 
             }
         });
@@ -179,19 +212,9 @@ public class MainFragment extends Fragment implements OnDateSelectedListener{
 
         builder.create().show();
     }
-    private void setupActionBar() {
-        ActionBar actionBar = getActivity().getActionBar();
-        if (actionBar != null) {
-            // Show the Up button in the action bar.
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-    }
 
-    @Override
-    public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
-        dialog();
 
-    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated

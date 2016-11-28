@@ -10,36 +10,49 @@ import java.util.ArrayList;
  */
 
 public class ListContent {
-    private ArrayList<String> adapterListContent=new ArrayList<>();
-    private ArrayList<String>adapterListTitle=new ArrayList<>();
-    private int adapterListDrawable[]=new int[3];
-    public ListContent(){
+    private String adapterListContent;
 
-    }
-    public ArrayList<String> getAdapterListContent() {
-        return adapterListContent;
-    }
 
-    public void setAdapterListContent(ArrayList<String> adapterListContent) {
-        this.adapterListContent = adapterListContent;
+    private String adapterListTitle;
+    private int adapterListDrawable;
+
+    public ListContent(String AdapterListTitle,String AdapterListContent,int i){
+        adapterListTitle=AdapterListTitle;
+        adapterListContent=AdapterListContent;
+        adapterListDrawable=i;
     }
 
-    public ArrayList<String> getAdapterListTitle() {
+    public String getAdapterListTitle() {
         return adapterListTitle;
     }
 
-    public void setAdapterListTitle(ArrayList<String> adapterListTitle) {
+    public void setAdapterListTitle(String adapterListTitle) {
         this.adapterListTitle = adapterListTitle;
     }
 
-    public int[] getAdapterListDrawable() {
+    public String getAdapterListContent() {
+        return adapterListContent;
+    }
+
+    public void setAdapterListContent(String adapterListContent) {
+        this.adapterListContent = adapterListContent;
+    }
+
+
+    public int getAdapterListDrawable() {
         return adapterListDrawable;
     }
 
-    public void setAdapterListDrawable(int[] adapterListDrawable) {
+    public void setAdapterListDrawable(int adapterListDrawable) {
         this.adapterListDrawable = adapterListDrawable;
     }
 
 
 
-}
+
+    }
+
+
+
+
+

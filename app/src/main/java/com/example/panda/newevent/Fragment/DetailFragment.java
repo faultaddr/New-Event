@@ -6,14 +6,21 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.panda.newevent.R;
+import com.example.panda.newevent.model.ListContent;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -23,15 +30,19 @@ import com.example.panda.newevent.R;
  * Use the {@link DetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class DetailFragment extends Fragment {
+public class DetailFragment extends Fragment implements TextWatcher {
 
     //View 声明
-
-
+    private ImageButton backButton;
+    private TextView title;
+    private TextView editButton;
+    private EditText editText;
+    private EditText editTitle;
     //常量声明
 
     //变量声明
     private static String detailContent;
+    Bundle bundle=new Bundle();
     //数组声明
 
     private OnFragmentInteractionListener mListener;
@@ -65,7 +76,17 @@ public class DetailFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v=inflater.inflate(R.layout.fragment_detail, container, false);
-        EditText editText=(EditText) v.findViewById(R.id.detailTextContent);
+        View parent=(LinearLayout)getActivity().findViewById(R.id.titlebar);
+        title=(TextView)parent.findViewById(R.id.title);
+        editButton=(TextView)parent.findViewById(R.id.editButton);
+        backButton=(ImageButton)parent.findViewById(R.id.backButton) ;
+
+        title.setText("详细事项");
+        editButton.setVisibility(View.VISIBLE);
+        backButton.setVisibility(View.VISIBLE);
+        editText=(EditText) v.findViewById(R.id.detailTextContent);
+        editTitle=(EditText)v.findViewById(R.id.titletext) ;
+        editText.setSaveEnabled(true);
         if(detailContent!=null) {
             if (detailContent.equals("focus")) {
                 editText.setFocusable(true);
@@ -75,6 +96,26 @@ public class DetailFragment extends Fragment {
 
             editText.setText(detailContent);
         }
+        editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                editTitle.setFocusable(true);
+                editTitle.setEditableFactory(Editable.Factory.getInstance());
+
+            }
+        });
+
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentTransaction fragmentTransaction=getActivity().getSupportFragmentManager().beginTransaction();
+                MainFragment mainFragment=MainFragment.newInstance(bundle);
+                fragmentTransaction.add(R.id.detailContent,mainFragment);
+                fragmentTransaction.show(mainFragment);
+                fragmentTransaction.hide(getTargetFragment());
+                fragmentTransaction.commit();
+            }
+        });
 
         return v;
     }
@@ -96,6 +137,28 @@ public class DetailFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+    }
+
+    @Override
+    public void afterTextChanged(Editable editable) {
+        String sTitle=editTitle.getText().toString();
+        String s= editText.getText().toString();
+        editText.setText(s);
+        editTitle.setText(sTitle);
+        bundle.putString("title",sTitle);
+        bundle.putString("content",s);
+        bundle.putInt("drawable",1);
+
     }
 
     /**

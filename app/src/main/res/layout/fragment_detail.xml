@@ -3,6 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.panda.newevent.Fragment.DetailFragment">
+    <EditText
+        android:id="@+id/titletext"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+
     <ScrollView
         android:id="@+id/detailScrollView"
         android:layout_width="match_parent"
@@ -13,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:maxLines="100"
+            android:textIsSelectable="false"
             android:layout_gravity="center"
             android:gravity="center"
             android:text="无内容" />
