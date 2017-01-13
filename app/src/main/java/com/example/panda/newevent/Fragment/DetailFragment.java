@@ -1,26 +1,36 @@
 package com.example.panda.newevent.Fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.panda.newevent.R;
+import com.example.panda.newevent.database.Info;
 import com.example.panda.newevent.model.ListContent;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import cn.bmob.v3.exception.BmobException;
+import cn.bmob.v3.listener.SaveListener;
+import cn.bmob.v3.listener.UpdateListener;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -33,16 +43,25 @@ import java.util.Map;
 public class DetailFragment extends Fragment implements TextWatcher {
 
     //View 声明
-    private ImageButton backButton;
+    private ImageView backButton;
     private TextView title;
-    private TextView editButton;
+    private ImageView editButton;
     private EditText editText;
     private EditText editTitle;
+
     //常量声明
 
     //变量声明
     private static String detailContent;
-    Bundle bundle=new Bundle();
+    private static String detailTime;
+    private static String objectId;
+    private static MainFragment mainFragment1;
+    //Bundle bundle=new Bundle();
+    String s;
+    String sTitle;
+    String tempText;
+    String tempTitle;
+    boolean saved;
     //数组声明
 
     private OnFragmentInteractionListener mListener;
@@ -54,15 +73,16 @@ public class DetailFragment extends Fragment implements TextWatcher {
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
-     *
-
      */
     // TODO: Rename and change types and number of parameters
-    public static DetailFragment newInstance(Bundle bundle) {
-        detailContent=bundle.getString("content");
-
+    public static DetailFragment newInstance(Bundle bundle, MainFragment mainFragment) {
+        detailContent = bundle.getString("content");
+        detailTime = bundle.getString("time");
+        objectId = bundle.getString("objectId");
+        //mainFragment1=mainFragment;
+        Log.i("time", detailTime + "");
         DetailFragment fragment = new DetailFragment();
-        fragment.setTargetFragment(fragment,1);
+        fragment.setTargetFragment(fragment, 1);
         return fragment;
     }
 
@@ -75,19 +95,24 @@ public class DetailFragment extends Fragment implements TextWatcher {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v=inflater.inflate(R.layout.fragment_detail, container, false);
-        View parent=(LinearLayout)getActivity().findViewById(R.id.titlebar);
-        title=(TextView)parent.findViewById(R.id.title);
-        editButton=(TextView)parent.findViewById(R.id.editButton);
-        backButton=(ImageButton)parent.findViewById(R.id.backButton) ;
+
+        View v = inflater.inflate(R.layout.fragment_detail, container, false);
+        View parent = (LinearLayout) getActivity().findViewById(R.id.titlebar);
+        title = (TextView) parent.findViewById(R.id.title);
+        editButton = (ImageView) parent.findViewById(R.id.editButton);
+        backButton = (ImageView) parent.findViewById(R.id.backButton);
 
         title.setText("详细事项");
         editButton.setVisibility(View.VISIBLE);
+
         backButton.setVisibility(View.VISIBLE);
-        editText=(EditText) v.findViewById(R.id.detailTextContent);
-        editTitle=(EditText)v.findViewById(R.id.titletext) ;
+        editText = (EditText) v.findViewById(R.id.detailTextContent);
+        editTitle = (EditText) v.findViewById(R.id.titletext);
         editText.setSaveEnabled(true);
-        if(detailContent!=null) {
+        tempText = editText.getText().toString();
+        tempTitle = editTitle.getText().toString();
+
+        if (detailContent != null) {
             if (detailContent.equals("focus")) {
                 editText.setFocusable(true);
                 editText.setEditableFactory(Editable.Factory.getInstance());
@@ -99,18 +124,67 @@ public class DetailFragment extends Fragment implements TextWatcher {
         editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                editTitle.setFocusable(true);
-                editTitle.setEditableFactory(Editable.Factory.getInstance());
+                editText.setFocusable(false);
+                editTitle.setFocusable(false);
+                editButton.setFocusable(true);
+                sTitle = editTitle.getText().toString();
+                s = editText.getText().toString();
+//                editText.setText(s);
+//                editTitle.setText(sTitle);
+                Info p2 = new Info();
+                p2.setTitle(sTitle);
+                p2.setContent(s);
+                p2.setTime(detailTime);
 
+                p2.setUser("panyunyi");
+                //TODO-LIST 1.读取已经存在的备忘详细内容
+                //TODO-LIST 2.在有详细内容时再进行修改而不是直接存为一个新的备忘事项
+                if (!(s.equals(tempText) && sTitle.equals(tempTitle))) {
+                    p2.setValue("Title", sTitle);
+                    p2.setValue("Content", s);
+                    p2.update(objectId, new UpdateListener() {
+
+                        @Override
+                        public void done(BmobException e) {
+                            if (e == null) {
+                                Log.i("bmob", "更新成功");
+                                saved = true;
+                            } else {
+                                Log.i("bmob", "更新失败：" + e.getMessage() + "," + e.getErrorCode());
+                            }
+                        }
+
+                    });
+                } else {
+                    p2.save(new SaveListener<String>() {
+                        @Override
+                        public void done(String objectId, BmobException e) {
+                            if (e == null) {
+                                Log.i("done", "done");
+                                saved = true;
+                            } else {
+                                Log.i("fail", "fail" + e);
+                            }
+                        }
+                    });
+                }
             }
         });
 
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FragmentTransaction fragmentTransaction=getActivity().getSupportFragmentManager().beginTransaction();
-                MainFragment mainFragment=MainFragment.newInstance(bundle);
-                fragmentTransaction.add(R.id.detailContent,mainFragment);
+
+
+                FragmentTransaction fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+                Bundle bundle = new Bundle();
+                if (saved == true) {
+                    bundle.putString("time", detailTime);
+                    bundle.putString("title", sTitle);
+                    bundle.putString("content", s);
+                }
+                MainFragment mainFragment = MainFragment.newInstance(bundle);
+                fragmentTransaction.replace(R.id.detailContent, mainFragment);
                 fragmentTransaction.show(mainFragment);
                 fragmentTransaction.hide(getTargetFragment());
                 fragmentTransaction.commit();
@@ -141,24 +215,19 @@ public class DetailFragment extends Fragment implements TextWatcher {
 
     @Override
     public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+        Log.i(">>>", "before");
     }
 
     @Override
     public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+        Log.i(">>>", "on");
     }
 
     @Override
     public void afterTextChanged(Editable editable) {
-        String sTitle=editTitle.getText().toString();
-        String s= editText.getText().toString();
-        editText.setText(s);
-        editTitle.setText(sTitle);
-        bundle.putString("title",sTitle);
-        bundle.putString("content",s);
-        bundle.putInt("drawable",1);
-
+        Log.i(">>>", "after");
+        editText.setFocusable(false);
+        editButton.setFocusable(true);
     }
 
     /**

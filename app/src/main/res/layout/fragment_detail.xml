@@ -1,27 +1,43 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.example.panda.newevent.Fragment.DetailFragment">
     <EditText
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+
         android:id="@+id/titletext"
+        android:layout_marginTop="8dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="备忘标题"
+        android:background="@drawable/edittextshape"
         />
 
     <ScrollView
+        android:layout_marginTop="15dp"
         android:id="@+id/detailScrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@null">
         <!-- TODO: Update blank fragment layout -->
         <EditText
+            android:focusable="true"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:paddingRight="8dp"
+            android:paddingLeft="8dp"
             android:id="@+id/detailTextContent"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:maxLines="100"
+
+            android:inputType="textMultiLine"
             android:textIsSelectable="false"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:text="无内容" />
+            android:hint="无内容"
+            android:background="@drawable/edittextshape"
+            />
     </ScrollView>
-</FrameLayout>
+</LinearLayout>

@@ -6,28 +6,45 @@
 
     <ImageView
         android:id="@+id/mainListImage"
+        android:layout_marginLeft="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp" />
+        android:src="@drawable/backbutton" />
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="#ff00ff"
+        android:background="#00ffff"
 
         >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
+            <TextView
+                android:id="@+id/mainListTime"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:text="tianxia"
 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         <TextView
 
             android:id="@+id/mainListTextTitle"
             android:maxLines="1"
+            android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="标题"
             />
 
+        </LinearLayout>
         <TextView
             android:id="@+id/mainListTextContent"
             android:maxLines="1"
