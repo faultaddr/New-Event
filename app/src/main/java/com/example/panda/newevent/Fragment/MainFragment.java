@@ -69,6 +69,7 @@ public class MainFragment extends Fragment{
     private ImageView backButton;
     private TextView title;
     private ImageView editButton;
+    private TextView detailText;
     static MainFragment fragment;
     //数组声明
     private static ArrayList<String>listTime=new ArrayList<>();//时间
@@ -153,7 +154,7 @@ public class MainFragment extends Fragment{
         backButton.setVisibility(View.INVISIBLE);
         listview = (ListView)v.findViewById(R.id.mainlistView);
         calenderView = (MaterialCalendarView)v.findViewById(calendarView);
-
+        detailText=(TextView)v.findViewById(R.id.dateplus);
         //DetailFragment detailFragment=new DetailFragment();
         calenderView.setSelectionMode(MaterialCalendarView.SELECTION_MODE_MULTIPLE);
         final DetailFragment detailFragment = DetailFragment.newInstance(new Bundle(),fragment);
@@ -174,6 +175,7 @@ public class MainFragment extends Fragment{
             }
         });
         calenderView.setSelectedDate(CalendarDay.today());
+        Log.i(">>>today",CalendarDay.today()+"");
         //List<CalendarDay> calenderDay = calenderView.getSelectedDates();
 
         calenderView.setOnDateChangedListener(new OnDateSelectedListener() {
@@ -252,6 +254,7 @@ public class MainFragment extends Fragment{
                 dialog.dismiss();
                 String s1,s2;
                 calenderView.setSelectedDate(calendarDay);
+
                 Bundle bundle = new Bundle();
                 if(calendarDay.getMonth()+1>=10){
                     s1=""+calendarDay.getMonth()+1;
@@ -268,6 +271,7 @@ public class MainFragment extends Fragment{
 
                 Log.i(">>>>",calendarDay.getYear()+"-"+calendarDay.getMonth()+"-"+calendarDay.getDay()+"");
                 bundle.putString("time", calendarDay.getYear()+""+s1+""+s2+"");
+                detailText.setText(calendarDay.getYear()+"-"+calendarDay.getMonth()+"-"+calendarDay.getDay()+"");
                 for(int i=0;i<listTime.size();i++){
                     if(bundle.getString("time").equals(listTime.get(i))){
                         bundle.putString("objectId",listId.get(i));
@@ -382,12 +386,12 @@ public class MainFragment extends Fragment{
                 for (int i = 0; i < listTime.size(); i++) {
                     Log.i(">>>", "" + i);
                     Log.i(">>>", "" + listTime.get(i));
-                    int a = Integer.valueOf(listTime.get(i).substring(0, 3));
+                    int a = Integer.valueOf(listTime.get(i).substring(0, 4));
                     int b = Integer.valueOf(listTime.get(i).substring(4, 6));
                     int c = Integer.valueOf(listTime.get(i).substring(6, 8));
-                    CalendarDay currentDay = CalendarDay.from(a, b, c);
+                    CalendarDay currentDay = CalendarDay.from(a, b-1, c);
                     Log.i(">>>", "" + currentDay);
-                    calenderView.setDateSelected(currentDay, true);
+                    calenderView.setDateSelected(currentDay,true);
                     calendar.add(currentDay);
                     MyListAdapter myListAdapter = new MyListAdapter(listId,listTime,listTitle, listContent, getActivity());
 
