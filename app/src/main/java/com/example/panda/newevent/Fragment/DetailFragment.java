@@ -58,9 +58,9 @@ public class DetailFragment extends Fragment implements TextWatcher {
     private static MainFragment mainFragment1;
     //Bundle bundle=new Bundle();
     String s;
-    String sTitle;
-    String tempText;
-    String tempTitle;
+    static String sTitle;
+    static String tempText;
+    static String tempTitle;
     boolean saved;
     //数组声明
 
@@ -76,11 +76,16 @@ public class DetailFragment extends Fragment implements TextWatcher {
      */
     // TODO: Rename and change types and number of parameters
     public static DetailFragment newInstance(Bundle bundle, MainFragment mainFragment) {
-        detailContent = bundle.getString("content");
         detailTime = bundle.getString("time");
+        if(bundle.getBoolean("isFromList")==true){
+        detailContent = bundle.getString("content");
         objectId = bundle.getString("objectId");
+        tempTitle=bundle.getString("title");
+        tempText=bundle.getString("content");
+        }
         //mainFragment1=mainFragment;
         Log.i("time", detailTime + "");
+        Log.i("title",tempTitle+"");
         DetailFragment fragment = new DetailFragment();
         fragment.setTargetFragment(fragment, 1);
         return fragment;
@@ -109,10 +114,10 @@ public class DetailFragment extends Fragment implements TextWatcher {
         editText = (EditText) v.findViewById(R.id.detailTextContent);
         editTitle = (EditText) v.findViewById(R.id.titletext);
         editText.setSaveEnabled(true);
-        tempText = editText.getText().toString();
-        tempTitle = editTitle.getText().toString();
+        editText.setText(tempText);
+        editTitle.setText(tempTitle);
 
-        if (detailContent != null) {
+/*        if (detailContent != null) {
             if (detailContent.equals("focus")) {
                 editText.setFocusable(true);
                 editText.setEditableFactory(Editable.Factory.getInstance());
@@ -120,7 +125,7 @@ public class DetailFragment extends Fragment implements TextWatcher {
             }
 
             editText.setText(detailContent);
-        }
+        }*/
         editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -139,7 +144,10 @@ public class DetailFragment extends Fragment implements TextWatcher {
                 p2.setUser("panyunyi");
                 //TODO-LIST 1.读取已经存在的备忘详细内容
                 //TODO-LIST 2.在有详细内容时再进行修改而不是直接存为一个新的备忘事项
-                if (!(s.equals(tempText) && sTitle.equals(tempTitle))) {
+                Log.i(">>>",""+tempText+">>>"+tempTitle);
+
+                if (!(s.equals(tempText) || !sTitle.equals(tempTitle))) {
+
                     p2.setValue("Title", sTitle);
                     p2.setValue("Content", s);
                     p2.update(objectId, new UpdateListener() {

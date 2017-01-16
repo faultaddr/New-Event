@@ -25,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.panda.newevent.R;
 import com.example.panda.newevent.adapter.MyListAdapter;
@@ -60,7 +61,7 @@ import static com.example.panda.newevent.R.id.calendarView;
  * Use the {@link MainFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MainFragment extends Fragment{
+public class MainFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private ListView listview;
@@ -72,15 +73,19 @@ public class MainFragment extends Fragment{
     private TextView detailText;
     static MainFragment fragment;
     //数组声明
-    private static ArrayList<String>listTime=new ArrayList<>();//时间
+    private static ArrayList<String> listTime = new ArrayList<>();//时间
     private static ArrayList<String> listTitle = new ArrayList<>();//事项标题
     private static ArrayList<String> listContent = new ArrayList<>();//事项内容
     //private int listDrawable[] = {R.drawable.greeimage, R.drawable.yellowimage, R.drawable.redimage};//事项紧急程度划分
-    private static ArrayList<String>listId=new ArrayList<>();
+    private static ArrayList<String> listId = new ArrayList<>();
+    private static int count=0;//来进行锁控制
+    private static boolean TAG;
+
     List<CalendarDay> calendar = new ArrayList<>();
-    DetailFragment detailFragment = DetailFragment.newInstance(new Bundle(),fragment);
+    DetailFragment detailFragment = DetailFragment.newInstance(new Bundle(), fragment);
 
     private OnFragmentInteractionListener mListener;
+    private Bundle newBundle = new Bundle();
 
     public MainFragment() {
         // Required empty public constructor
@@ -91,24 +96,24 @@ public class MainFragment extends Fragment{
     // TODO: Rename and change types and number of parameters
     public static MainFragment newInstance(Bundle bundle) {
 
-        Log.i(">>>bundle",("bundle == null ? " +(bundle==null)));
+        Log.i(">>>bundle", ("bundle == null ? " + (bundle == null)));
 
         fragment = new MainFragment();
-        fragment.setTargetFragment(fragment,1);
-        listTime=null;
-        listTime=new ArrayList<>();
-        listContent=null;
-        listContent=new ArrayList<>();
-        listTitle=null;
-        listTitle=new ArrayList<>();
-        listId=null;
-        listId=new ArrayList<>();
-        if(bundle==null){}
-        else{
-            String time=bundle.getString("time");
-            String title=bundle.getString("title");
-            String content=bundle.getString("content");
-            Log.i("qqq",time+title+content+"");
+        fragment.setTargetFragment(fragment, 1);
+        listTime = null;
+        listTime = new ArrayList<>();
+        listContent = null;
+        listContent = new ArrayList<>();
+        listTitle = null;
+        listTitle = new ArrayList<>();
+        listId = null;
+        listId = new ArrayList<>();
+        if (bundle == null) {
+        } else {
+            String time = bundle.getString("time");
+            String title = bundle.getString("title");
+            String content = bundle.getString("content");
+            Log.i("qqq", time + title + content + "");
             /*
             if(listTime!=null){
             listTime.add(time);
@@ -121,7 +126,6 @@ public class MainFragment extends Fragment{
     }
 
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,8 +134,8 @@ public class MainFragment extends Fragment{
 
     private void initData() {
 
-        AsyncTask asyncTask=null;
-        asyncTask=new search();
+        AsyncTask asyncTask = null;
+        asyncTask = new search();
         asyncTask.execute();
 
     }
@@ -142,22 +146,21 @@ public class MainFragment extends Fragment{
         // Inflate the layout for this fragment
 
 
-
-        View v=inflater.inflate(R.layout.main,container,false);
-        View parent=(LinearLayout)getActivity().findViewById(R.id.titlebar);
-        title=(TextView)parent.findViewById(R.id.title);
-        editButton=(ImageView)parent.findViewById(R.id.editButton);
-        backButton=(ImageView)parent.findViewById(R.id.backButton) ;
+        View v = inflater.inflate(R.layout.main, container, false);
+        View parent = (LinearLayout) getActivity().findViewById(R.id.titlebar);
+        title = (TextView) parent.findViewById(R.id.title);
+        editButton = (ImageView) parent.findViewById(R.id.editButton);
+        backButton = (ImageView) parent.findViewById(R.id.backButton);
 
         title.setText("待办");
         editButton.setVisibility(View.INVISIBLE);
         backButton.setVisibility(View.INVISIBLE);
-        listview = (ListView)v.findViewById(R.id.mainlistView);
-        calenderView = (MaterialCalendarView)v.findViewById(calendarView);
-        detailText=(TextView)v.findViewById(R.id.dateplus);
+        listview = (ListView) v.findViewById(R.id.mainlistView);
+        calenderView = (MaterialCalendarView) v.findViewById(calendarView);
+        detailText = (TextView) v.findViewById(R.id.dateplus);
         //DetailFragment detailFragment=new DetailFragment();
         calenderView.setSelectionMode(MaterialCalendarView.SELECTION_MODE_MULTIPLE);
-        final DetailFragment detailFragment = DetailFragment.newInstance(new Bundle(),fragment);
+
         calenderView.addDecorator(new DayViewDecorator() {
             @Override
             public boolean shouldDecorate(CalendarDay day) {
@@ -168,14 +171,13 @@ public class MainFragment extends Fragment{
             public void decorate(DayViewFacade view) {
                 try {
                     view.setBackgroundDrawable(Drawable.createFromPath("/sdcard/a.jpg"));
+                } catch (Exception e) {
+                    Log.i(">>>error", e.toString());
                 }
-            catch (Exception e){
-                Log.i(">>>error",e.toString());
-            }
             }
         });
         calenderView.setSelectedDate(CalendarDay.today());
-        Log.i(">>>today",CalendarDay.today()+"");
+        Log.i(">>>today", CalendarDay.today() + "");
         //List<CalendarDay> calenderDay = calenderView.getSelectedDates();
 
         calenderView.setOnDateChangedListener(new OnDateSelectedListener() {
@@ -206,6 +208,12 @@ public class MainFragment extends Fragment{
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
 
+                newBundle.putString("time", listTime.get(i));
+                newBundle.putString("objectId", listId.get(i));
+                newBundle.putString("title", listTitle.get(i));
+                newBundle.putString("content", listContent.get(i));
+                newBundle.putBoolean("isFromList",true);
+                DetailFragment detailFragment = DetailFragment.newInstance(newBundle, fragment);
                 fragmentTransaction.add(R.id.detailContent, detailFragment);
 
                 listview.setVisibility(View.GONE);
@@ -252,37 +260,37 @@ public class MainFragment extends Fragment{
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
-                String s1,s2;
+                String s1, s2;
                 calenderView.setSelectedDate(calendarDay);
 
                 Bundle bundle = new Bundle();
-                if(calendarDay.getMonth()+1>=10){
-                    s1=""+calendarDay.getMonth()+1;
+                if (calendarDay.getMonth() + 1 >= 10) {
+                    s1 = "" + calendarDay.getMonth() + 1;
+                } else {
+                    s1 = "" + calendarDay.getMonth() + 1;
                 }
-                else{
-                    s1=""+calendarDay.getMonth()+1;
-                }
-                if(calendarDay.getDay()>=10){
-                    s2=calendarDay.getDay()+"";
-                }
-                else{
-                    s2="0"+calendarDay.getDay();
+                if (calendarDay.getDay() >= 10) {
+                    s2 = calendarDay.getDay() + "";
+                } else {
+                    s2 = "0" + calendarDay.getDay();
                 }
 
-                Log.i(">>>>",calendarDay.getYear()+"-"+calendarDay.getMonth()+"-"+calendarDay.getDay()+"");
-                bundle.putString("time", calendarDay.getYear()+""+s1+""+s2+"");
-                detailText.setText(calendarDay.getYear()+"-"+calendarDay.getMonth()+"-"+calendarDay.getDay()+"");
-                for(int i=0;i<listTime.size();i++){
+                Log.i(">>>>", calendarDay.getYear() + "-" + calendarDay.getMonth() + "-" + calendarDay.getDay() + "");
+                bundle.putString("time", calendarDay.getYear() + "" + s1 + "" + s2 + "");
+                detailText.setText(calendarDay.getYear() + "-" + calendarDay.getMonth() + "-" + calendarDay.getDay() + "");
+
+/*                for(int i=0;i<listTime.size();i++){
                     if(bundle.getString("time").equals(listTime.get(i))){
                         bundle.putString("objectId",listId.get(i));
+                        bundle.putString("title",listTitle.get(i));
+                        bundle.putString("content",listContent.get(i));
                     }
                     else;
-                }
-
-                DetailFragment detailFragment = DetailFragment.newInstance(bundle,fragment);
+                }*/
+                DetailFragment detailFragment = DetailFragment.newInstance(bundle, fragment);
                 fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.add(R.id.detailContent, detailFragment);
-                detailFragment.setTargetFragment(fragment,100);//100表示
+                detailFragment.setTargetFragment(fragment, 100);//100表示
                 fragmentTransaction.show(detailFragment);
                 listview.setVisibility(View.GONE);
                 calenderView.setVisibility(View.GONE);
@@ -305,7 +313,6 @@ public class MainFragment extends Fragment{
     }
 
 
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -322,14 +329,14 @@ public class MainFragment extends Fragment{
     }
 
 
-    class search extends AsyncTask<Object,Void,Boolean>{
+    class search extends AsyncTask<Object, Void, Boolean> {
 
         search() {
 
         }
 
         @Override
-        protected Boolean doInBackground(Object... objects ) {
+        protected Boolean doInBackground(Object... objects) {
             BmobQuery<Info> query = new BmobQuery<Info>();
 //查询playerName叫“比目”的数据
             query.addWhereEqualTo("User", "panyunyi");
@@ -337,39 +344,45 @@ public class MainFragment extends Fragment{
             query.setLimit(50);
 //执行查询方法
             query.order("Time");
-            try{
-            query.findObjects(new FindListener<Info>() {
-                @Override
-                public void done(List<Info> object, BmobException e) {
-                    if(e==null){
-                        //toast("查询成功：共"+object.size()+"条数据。");
-                        for (Info info : object) {
-                            //获得playerName的信息
-                            listTitle.add(info.getTitle());
-                            //获得数据的objectId信息
-                            listId.add(info.getObjectId());
-                            //SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd");  //格式化日期
-
-                            listTime.add(info.getTime());
-
-                            listContent.add(info.getContent());
-                            //获得createdAt数据创建时间（注意是：createdAt，不是createAt）
-
-                        }
-
-                    }else{
-
-                        Log.i("bmob","失败："+e.getMessage()+","+e.getErrorCode());
-                    }
-                }
-            });}
-            catch (Exception e){
-                Log.i(">>>error",e.toString());
-            }
             try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+
+                query.findObjects(new FindListener<Info>() {
+                    @Override
+                    public void done(List<Info> object, BmobException e) {
+                        if (e == null) {
+                            Toast.makeText(getActivity(),"查询成功：共" + object.size() + "条数据。",Toast.LENGTH_LONG).show();
+                            count=object.size();
+
+                            for (Info info : object) {
+                                //获得playerName的信息
+                                listTitle.add(info.getTitle());
+                                //获得数据的objectId信息
+                                listId.add(info.getObjectId());
+                                //SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd");  //格式化日期
+
+                                listTime.add(info.getTime());
+
+                                listContent.add(info.getContent());
+                                //获得createdAt数据创建时间（注意是：createdAt，不是createAt）
+
+                            }
+
+                        } else {
+
+                            Log.i("bmob", "失败：" + e.getMessage() + "," + e.getErrorCode());
+                        }
+                        TAG=true;
+                    }
+                });
+            } catch (Exception e) {
+                Log.i(">>>error", e.toString());
+            }
+            while(listContent.size()!=count||TAG==false){
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             return true;
         }
@@ -381,7 +394,8 @@ public class MainFragment extends Fragment{
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
-            Log.i(">>>","Start");
+            Log.i(">>>", "Start");
+            Log.i(">>>",listTime+"");
             try {
                 for (int i = 0; i < listTime.size(); i++) {
                     Log.i(">>>", "" + i);
@@ -389,17 +403,17 @@ public class MainFragment extends Fragment{
                     int a = Integer.valueOf(listTime.get(i).substring(0, 4));
                     int b = Integer.valueOf(listTime.get(i).substring(4, 6));
                     int c = Integer.valueOf(listTime.get(i).substring(6, 8));
-                    CalendarDay currentDay = CalendarDay.from(a, b-1, c);
+                    CalendarDay currentDay = CalendarDay.from(a, b - 1, c);
                     Log.i(">>>", "" + currentDay);
-                    calenderView.setDateSelected(currentDay,true);
+                    calenderView.setDateSelected(currentDay, true);
                     calendar.add(currentDay);
-                    MyListAdapter myListAdapter = new MyListAdapter(listId,listTime,listTitle, listContent, getActivity());
+                    MyListAdapter myListAdapter = new MyListAdapter(listId, listTime, listTitle, listContent, getActivity());
 
                     listview.setAdapter(myListAdapter);
                     setListViewHeight(listview);
                 }
-            }catch(Exception e){
-                Log.i(">>>error",e.toString());
+            } catch (Exception e) {
+                Log.i(">>>error", e.toString());
             }
 
 
@@ -409,6 +423,7 @@ public class MainFragment extends Fragment{
 
     /**
      * 重新计算ListView的高度，解决ScrollView和ListView两个View都有滚动的效果，在嵌套使用时起冲突的问题
+     *
      * @param listView
      */
     public void setListViewHeight(ListView listView) {
