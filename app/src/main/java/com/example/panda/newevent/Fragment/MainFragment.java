@@ -31,18 +31,26 @@ import com.example.panda.newevent.R;
 import com.example.panda.newevent.adapter.MyListAdapter;
 import com.example.panda.newevent.database.Info;
 import com.example.panda.newevent.model.sListView;
+import com.example.panda.newevent.tools.ACache;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.DayViewDecorator;
 import com.prolificinteractive.materialcalendarview.DayViewFacade;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 
+
+import org.json.JSONArray;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.EmptyStackException;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import cn.bmob.v3.Bmob;
 import cn.bmob.v3.BmobQuery;
@@ -52,6 +60,7 @@ import cn.bmob.v3.listener.SaveListener;
 
 import static android.view.View.GONE;
 import static com.example.panda.newevent.R.id.calendarView;
+import static com.example.panda.newevent.R.id.time;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -114,12 +123,11 @@ public class MainFragment extends Fragment {
             String title = bundle.getString("title");
             String content = bundle.getString("content");
             Log.i("qqq", time + title + content + "");
-            /*
-            if(listTime!=null){
+            if(bundle.getBoolean("isFromMainActivity")){
             listTime.add(time);
             listContent.add(content);
             listTitle.add(title);
-            }*/
+            }
         }
 
         return fragment;
@@ -364,12 +372,43 @@ public class MainFragment extends Fragment {
 
                                 listContent.add(info.getContent());
                                 //获得createdAt数据创建时间（注意是：createdAt，不是createAt）
-
+                                ACache mCache = ACache.get(getActivity());
+                                JSONArray titlejsonArray=new JSONArray(listTitle);
+                                JSONArray idjsonArray=new JSONArray(listId);
+                                JSONArray timejsonArray=new JSONArray(listTime);
+                                JSONArray contentjsonArray=new JSONArray(listContent);
+                                //Log.i("listTitle",titlejsonArray.toString());
+                                mCache.put("title", titlejsonArray);
+                                mCache.put("id", idjsonArray);//保存10秒，如果超过10秒去获取这个key，将为null
+                                //mCache.put("test_key3", "test value", 2 * ACache.TIME_DAY);//保存两天，如果超过两天去获取这个key，将为null
+                                mCache.put("time",timejsonArray);
+                                mCache.put("content",contentjsonArray);
                             }
 
                         } else {
+                            ACache mCache = ACache.get(getActivity());
+                            if (mCache!=null) {
+                                try {
+
+                                    JSONArray titlejsonArray = mCache.getAsJSONArray("title");
+                                    JSONArray idjsonArray = mCache.getAsJSONArray("id");
+                                    JSONArray timejsonArray = mCache.getAsJSONArray("time");
+                                    JSONArray contentjsonArray = mCache.getAsJSONArray("content");
+                                    for(int i=0;i<titlejsonArray.length();i++){
+                                        listTitle.add(titlejsonArray.get(i).toString());
+                                        listId.add(idjsonArray.get(i).toString());
+                                        listTime.add(timejsonArray.get(i).toString());
+                                        listContent.add(contentjsonArray.get(i).toString());
+                                    }
+                                } catch (Exception ex) {
+                                    Log.e("exception", ex.getMessage());
+
+                                }
+                            }
 
                             Log.i("bmob", "失败：" + e.getMessage() + "," + e.getErrorCode());
+
+
                         }
                         TAG=true;
                     }
