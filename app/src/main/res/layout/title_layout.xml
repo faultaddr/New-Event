@@ -11,6 +11,7 @@
         android:src="@drawable/back" />
 
     <TextView
+        android:id="@+id/signup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="#ffffff"
@@ -18,5 +19,6 @@
         android:layout_centerVertical="true"
         android:textSize="20sp"
         android:text="Sign up"
+        android:clickable="true"
         />
 </RelativeLayout>

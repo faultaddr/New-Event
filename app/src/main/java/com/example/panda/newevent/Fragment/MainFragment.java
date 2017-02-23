@@ -80,6 +80,7 @@ public class MainFragment extends Fragment {
     private TextView title;
     private ImageView editButton;
     private TextView detailText;
+
     static MainFragment fragment;
     //数组声明
     private static ArrayList<String> listTime = new ArrayList<>();//时间
