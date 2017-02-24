@@ -59,7 +59,9 @@ import cn.bmob.v3.listener.FindListener;
 import cn.bmob.v3.listener.SaveListener;
 
 import static android.view.View.GONE;
+import static android.view.View.getDefaultSize;
 import static com.example.panda.newevent.R.id.calendarView;
+import static com.example.panda.newevent.R.id.dateplus;
 import static com.example.panda.newevent.R.id.time;
 
 /**
@@ -80,23 +82,24 @@ public class MainFragment extends Fragment {
     private TextView title;
     private ImageView editButton;
     private TextView detailText;
-
+    private TextView datePlus;
     static MainFragment fragment;
     //数组声明
     private static ArrayList<String> listTime = new ArrayList<>();//时间
     private static ArrayList<String> listTitle = new ArrayList<>();//事项标题
     private static ArrayList<String> listContent = new ArrayList<>();//事项内容
-    //private int listDrawable[] = {R.drawable.greeimage, R.drawable.yellowimage, R.drawable.redimage};//事项紧急程度划分
+    private static ArrayList<String> listEmergency = new ArrayList<>();//紧急程度
+    private int listDrawable[] = {R.drawable.greeimage, R.drawable.yellowimage, R.drawable.redimage};//事项紧急程度划分
     private static ArrayList<String> listId = new ArrayList<>();
     private static int count=0;//来进行锁控制
     private static boolean TAG;
-
+    private static boolean TAGofNull;
+    private static boolean FromTag;
     List<CalendarDay> calendar = new ArrayList<>();
     DetailFragment detailFragment = DetailFragment.newInstance(new Bundle(), fragment);
 
     private OnFragmentInteractionListener mListener;
     private Bundle newBundle = new Bundle();
-
     public MainFragment() {
         // Required empty public constructor
     }
@@ -119,15 +122,23 @@ public class MainFragment extends Fragment {
         listId = null;
         listId = new ArrayList<>();
         if (bundle == null) {
+            TAGofNull=true;
+
         } else {
             String time = bundle.getString("time");
             String title = bundle.getString("title");
             String content = bundle.getString("content");
-            Log.i("qqq", time + title + content + "");
+            String emergency=bundle.getString("emergency");
+            Log.i("qqq", time + title + content + emergency+"");
             if(bundle.getBoolean("isFromMainActivity")){
-            listTime.add(time);
-            listContent.add(content);
-            listTitle.add(title);
+
+                listTime.add(time);
+                listContent.add(content);
+                listTitle.add(title);
+                listEmergency.add(emergency);
+            }
+            if(bundle.getBoolean("isFromSaved")){
+                FromTag=true;
             }
         }
 
@@ -143,9 +154,9 @@ public class MainFragment extends Fragment {
 
     private void initData() {
 
-        AsyncTask asyncTask = null;
-        asyncTask = new search();
-        asyncTask.execute();
+            AsyncTask asyncTask = null;
+            asyncTask = new search();
+            asyncTask.execute();
 
     }
 
@@ -276,7 +287,7 @@ public class MainFragment extends Fragment {
                 if (calendarDay.getMonth() + 1 >= 10) {
                     s1 = "" + calendarDay.getMonth() + 1;
                 } else {
-                    s1 = "" + calendarDay.getMonth() + 1;
+                    s1 = "0" + (calendarDay.getMonth()+1);
                 }
                 if (calendarDay.getDay() >= 10) {
                     s2 = calendarDay.getDay() + "";
@@ -286,7 +297,6 @@ public class MainFragment extends Fragment {
 
                 Log.i(">>>>", calendarDay.getYear() + "-" + calendarDay.getMonth() + "-" + calendarDay.getDay() + "");
                 bundle.putString("time", calendarDay.getYear() + "" + s1 + "" + s2 + "");
-                detailText.setText(calendarDay.getYear() + "-" + calendarDay.getMonth() + "-" + calendarDay.getDay() + "");
 
 /*                for(int i=0;i<listTime.size();i++){
                     if(bundle.getString("time").equals(listTime.get(i))){
@@ -303,6 +313,7 @@ public class MainFragment extends Fragment {
                 fragmentTransaction.show(detailFragment);
                 listview.setVisibility(View.GONE);
                 calenderView.setVisibility(View.GONE);
+                detailText.setVisibility(GONE);
                 fragmentTransaction.commit();
 
 
@@ -346,84 +357,124 @@ public class MainFragment extends Fragment {
 
         @Override
         protected Boolean doInBackground(Object... objects) {
-            BmobQuery<Info> query = new BmobQuery<Info>();
-//查询playerName叫“比目”的数据
-            query.addWhereEqualTo("User", "panyunyi");
-//返回50条数据，如果不加上这条语句，默认返回10条数据
-            query.setLimit(50);
-//执行查询方法
-            query.order("Time");
-            try {
-
-                query.findObjects(new FindListener<Info>() {
-                    @Override
-                    public void done(List<Info> object, BmobException e) {
-                        if (e == null) {
-                            Toast.makeText(getActivity(),"查询成功：共" + object.size() + "条数据。",Toast.LENGTH_LONG).show();
-                            count=object.size();
-
-                            for (Info info : object) {
-                                //获得playerName的信息
-                                listTitle.add(info.getTitle());
-                                //获得数据的objectId信息
-                                listId.add(info.getObjectId());
-                                //SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd");  //格式化日期
-
-                                listTime.add(info.getTime());
-
-                                listContent.add(info.getContent());
-                                //获得createdAt数据创建时间（注意是：createdAt，不是createAt）
-                                ACache mCache = ACache.get(getActivity());
-                                JSONArray titlejsonArray=new JSONArray(listTitle);
-                                JSONArray idjsonArray=new JSONArray(listId);
-                                JSONArray timejsonArray=new JSONArray(listTime);
-                                JSONArray contentjsonArray=new JSONArray(listContent);
-                                //Log.i("listTitle",titlejsonArray.toString());
-                                mCache.put("title", titlejsonArray);
-                                mCache.put("id", idjsonArray);//保存10秒，如果超过10秒去获取这个key，将为null
-                                //mCache.put("test_key3", "test value", 2 * ACache.TIME_DAY);//保存两天，如果超过两天去获取这个key，将为null
-                                mCache.put("time",timejsonArray);
-                                mCache.put("content",contentjsonArray);
-                            }
-
-                        } else {
-                            ACache mCache = ACache.get(getActivity());
-                            if (mCache!=null) {
-                                try {
-
-                                    JSONArray titlejsonArray = mCache.getAsJSONArray("title");
-                                    JSONArray idjsonArray = mCache.getAsJSONArray("id");
-                                    JSONArray timejsonArray = mCache.getAsJSONArray("time");
-                                    JSONArray contentjsonArray = mCache.getAsJSONArray("content");
-                                    for(int i=0;i<titlejsonArray.length();i++){
-                                        listTitle.add(titlejsonArray.get(i).toString());
-                                        listId.add(idjsonArray.get(i).toString());
-                                        listTime.add(timejsonArray.get(i).toString());
-                                        listContent.add(contentjsonArray.get(i).toString());
-                                    }
-                                } catch (Exception ex) {
-                                    Log.e("exception", ex.getMessage());
-
-                                }
-                            }
-
-                            Log.i("bmob", "失败：" + e.getMessage() + "," + e.getErrorCode());
-
-
-                        }
-                        TAG=true;
+            int record=0;
+            ACache mCache = ACache.get(getActivity());
+            ACache userCache = ACache.get(getActivity(),"user");
+            if (mCache!=null&&FromTag==false) {
+                try {
+                    record=1;
+                    JSONArray titlejsonArray = mCache.getAsJSONArray("title");
+                    JSONArray idjsonArray = mCache.getAsJSONArray("id");
+                    JSONArray timejsonArray = mCache.getAsJSONArray("time");
+                    JSONArray contentjsonArray = mCache.getAsJSONArray("content");
+                    JSONArray emergencyjsonArray = mCache.getAsJSONArray("emergency");
+                    for(int i=0;i<titlejsonArray.length();i++){
+                        listTitle.add(titlejsonArray.get(i).toString());
+                        listId.add(idjsonArray.get(i).toString());
+                        listTime.add(timejsonArray.get(i).toString());
+                        listContent.add(contentjsonArray.get(i).toString());
+                        listEmergency.add(emergencyjsonArray.get(i).toString());
                     }
-                });
-            } catch (Exception e) {
-                Log.i(">>>error", e.toString());
+                    Log.i("listTitle",listTitle.toString());
+                } catch (Exception ex) {
+                    Log.e("exception", ex.getMessage());
+
+                }
+                finally {
+                    TAG=true;
+                }
+            }else {
+
+                BmobQuery<Info> query = new BmobQuery<Info>();
+//查询playerName叫“比目”的数据
+                query.addWhereEqualTo("User", userCache.getAsString("username"));
+//返回50条数据，如果不加上这条语句，默认返回10条数据
+                query.setLimit(50);
+//执行查询方法
+                query.order("Time");
+                try {
+
+                    query.findObjects(new FindListener<Info>() {
+                        @Override
+                        public void done(List<Info> object, BmobException e) {
+                            if (e == null) {
+                                Toast.makeText(getActivity(), "查询成功：共" + object.size() + "条数据。", Toast.LENGTH_LONG).show();
+                                count = object.size();
+
+                                for (Info info : object) {
+                                    //获得playerName的信息
+                                    listTitle.add(info.getTitle());
+                                    //获得数据的objectId信息
+                                    listId.add(info.getObjectId());
+                                    //SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd");  //格式化日期
+
+                                    listTime.add(info.getTime());
+
+                                    listContent.add(info.getContent());
+
+                                    listEmergency.add(info.getEmergency());
+                                    //获得createdAt数据创建时间（注意是：createdAt，不是createAt）
+                                    ACache mCache = ACache.get(getActivity(),"Acache");
+                                    mCache.clear();
+                                    try{
+                                    JSONArray titlejsonArray = new JSONArray(listTitle);
+                                    JSONArray idjsonArray = new JSONArray(listId);
+                                    JSONArray timejsonArray = new JSONArray(listTime);
+                                    JSONArray contentjsonArray = new JSONArray(listContent);
+                                    JSONArray emergencyjsonArray = new JSONArray(listEmergency);
+                                    //Log.i("listTitle",titlejsonArray.toString());
+                                    mCache.put("title", titlejsonArray);
+                                    mCache.put("id", idjsonArray);//保存10秒，如果超过10秒去获取这个key，将为null
+                                    //mCache.put("test_key3", "test value", 2 * ACache.TIME_DAY);//保存两天，如果超过两天去获取这个key，将为null
+                                    mCache.put("time", timejsonArray);
+                                    mCache.put("content", contentjsonArray);
+                                    mCache.put("emergency", emergencyjsonArray);
+                                    }catch (Exception es){
+                                        System.out.print(es.getMessage());
+                                    }
+                                }
+
+                            } else {
+                                ACache mCache = ACache.get(getActivity());
+                                if (mCache != null) {
+                                    try {
+
+                                        JSONArray titlejsonArray = mCache.getAsJSONArray("title");
+                                        JSONArray idjsonArray = mCache.getAsJSONArray("id");
+                                        JSONArray timejsonArray = mCache.getAsJSONArray("time");
+                                        JSONArray contentjsonArray = mCache.getAsJSONArray("content");
+                                        JSONArray emergencyjsonArray = mCache.getAsJSONArray("emergency");
+                                        for (int i = 0; i < titlejsonArray.length(); i++) {
+                                            listTitle.add(titlejsonArray.get(i).toString());
+                                            listId.add(idjsonArray.get(i).toString());
+                                            listTime.add(timejsonArray.get(i).toString());
+                                            listContent.add(contentjsonArray.get(i).toString());
+                                        }
+                                    } catch (Exception ex) {
+                                        Log.e("exception", ex.getMessage());
+
+                                    }
+                                }
+
+                                Log.i("bmob", "失败：" + e.getMessage() + "," + e.getErrorCode());
+
+
+                            }
+                            TAG = true;
+                        }
+                    });
+                } catch (Exception e) {
+                    Log.i(">>>error", e.toString());
+                }
             }
+            if(record==0){
             while(listContent.size()!=count||TAG==false){
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            }
+            }}
             return true;
         }
 
@@ -439,15 +490,15 @@ public class MainFragment extends Fragment {
             try {
                 for (int i = 0; i < listTime.size(); i++) {
                     Log.i(">>>", "" + i);
-                    Log.i(">>>", "" + listTime.get(i));
+                    Log.i(">>>>>", "" + listTime.get(i));
                     int a = Integer.valueOf(listTime.get(i).substring(0, 4));
                     int b = Integer.valueOf(listTime.get(i).substring(4, 6));
                     int c = Integer.valueOf(listTime.get(i).substring(6, 8));
-                    CalendarDay currentDay = CalendarDay.from(a, b - 1, c);
-                    Log.i(">>>", "" + currentDay);
+                    CalendarDay currentDay = CalendarDay.from(a, b-1 , c);
+                    Log.i(">>>>>", "" + currentDay);
                     calenderView.setDateSelected(currentDay, true);
                     calendar.add(currentDay);
-                    MyListAdapter myListAdapter = new MyListAdapter(listId, listTime, listTitle, listContent, getActivity());
+                    MyListAdapter myListAdapter = new MyListAdapter(listId, listTime, listTitle, listContent,listEmergency, getActivity());
 
                     listview.setAdapter(myListAdapter);
                     setListViewHeight(listview);
@@ -459,7 +510,12 @@ public class MainFragment extends Fragment {
 
             //super.onPostExecute(aBoolean);
         }
+        private void adapter() {
+
+        }
     }
+
+
 
     /**
      * 重新计算ListView的高度，解决ScrollView和ListView两个View都有滚动的效果，在嵌套使用时起冲突的问题

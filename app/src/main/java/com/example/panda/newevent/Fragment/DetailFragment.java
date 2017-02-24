@@ -14,6 +14,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -24,6 +26,7 @@ import android.widget.Toast;
 import com.example.panda.newevent.R;
 import com.example.panda.newevent.database.Info;
 import com.example.panda.newevent.model.ListContent;
+import com.example.panda.newevent.tools.ACache;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +51,7 @@ public class DetailFragment extends Fragment implements TextWatcher {
     private ImageView editButton;
     private EditText editText;
     private EditText editTitle;
-
+    private CheckBox checkBox1,checkBox2,checkBox3;
     //常量声明
 
     //变量声明
@@ -62,6 +65,7 @@ public class DetailFragment extends Fragment implements TextWatcher {
     static String tempText;
     static String tempTitle;
     boolean saved;
+    int TAG;
     //数组声明
 
     private OnFragmentInteractionListener mListener;
@@ -90,7 +94,33 @@ public class DetailFragment extends Fragment implements TextWatcher {
         fragment.setTargetFragment(fragment, 1);
         return fragment;
     }
+    CheckBox.OnCheckedChangeListener checkboxlister = new CheckBox.OnCheckedChangeListener(){
 
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView,
+                                     boolean isChecked) {
+            if(checkBox1.isChecked()){
+                TAG=1;
+                checkBox2.setChecked(false);
+                checkBox3.setChecked(false);
+            }
+            if(checkBox2.isChecked()){
+                TAG=2;
+                checkBox1.setChecked(false);
+                checkBox3.setChecked(false);
+            }
+            if(checkBox3.isChecked()){
+                TAG=3;
+                checkBox1.setChecked(false);
+                checkBox2.setChecked(false);
+            }
+            switch (TAG){
+                case 1:
+
+            }
+        }
+
+    };
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,6 +136,12 @@ public class DetailFragment extends Fragment implements TextWatcher {
         title = (TextView) parent.findViewById(R.id.title);
         editButton = (ImageView) parent.findViewById(R.id.editButton);
         backButton = (ImageView) parent.findViewById(R.id.backButton);
+        checkBox1=(CheckBox)v.findViewById(R.id.rankFirst);
+        checkBox2=(CheckBox)v.findViewById(R.id.rankSecond);
+        checkBox3=(CheckBox)v.findViewById(R.id.rankThird);
+        checkBox1.setOnCheckedChangeListener(checkboxlister);
+        checkBox2.setOnCheckedChangeListener(checkboxlister);
+        checkBox3.setOnCheckedChangeListener(checkboxlister);
 
         title.setText("详细事项");
         editButton.setVisibility(View.VISIBLE);
@@ -140,8 +176,9 @@ public class DetailFragment extends Fragment implements TextWatcher {
                 p2.setTitle(sTitle);
                 p2.setContent(s);
                 p2.setTime(detailTime);
-
-                p2.setUser("panyunyi");
+                p2.setEmergency(TAG+"");
+                ACache userCache = ACache.get(getActivity(),"User");
+                p2.setUser(userCache.getAsString("username"));
                 //TODO-LIST 1.读取已经存在的备忘详细内容
                 //TODO-LIST 2.在有详细内容时再进行修改而不是直接存为一个新的备忘事项
                 Log.i(">>>",""+tempText+">>>"+tempTitle);
@@ -150,15 +187,18 @@ public class DetailFragment extends Fragment implements TextWatcher {
 
                     p2.setValue("Title", sTitle);
                     p2.setValue("Content", s);
+                    p2.setValue("emergency",TAG+"");
                     p2.update(objectId, new UpdateListener() {
 
                         @Override
                         public void done(BmobException e) {
                             if (e == null) {
                                 Log.i("bmob", "更新成功");
+                                Toast.makeText(getActivity(),"更新成功",Toast.LENGTH_LONG).show();
                                 saved = true;
                             } else {
                                 Log.i("bmob", "更新失败：" + e.getMessage() + "," + e.getErrorCode());
+                                Toast.makeText(getActivity(),"更新失败",Toast.LENGTH_LONG).show();
                             }
                         }
 
@@ -169,9 +209,11 @@ public class DetailFragment extends Fragment implements TextWatcher {
                         public void done(String objectId, BmobException e) {
                             if (e == null) {
                                 Log.i("done", "done");
+                                Toast.makeText(getActivity(),"保存成功",Toast.LENGTH_LONG).show();
                                 saved = true;
                             } else {
                                 Log.i("fail", "fail" + e);
+                                Toast.makeText(getActivity(),"保存失败",Toast.LENGTH_LONG).show();
                             }
                         }
                     });
@@ -190,6 +232,8 @@ public class DetailFragment extends Fragment implements TextWatcher {
                     bundle.putString("time", detailTime);
                     bundle.putString("title", sTitle);
                     bundle.putString("content", s);
+                    bundle.putString("emergency",TAG+"");
+                    bundle.putBoolean("isFromSaved",true);
                 }
                 MainFragment mainFragment = MainFragment.newInstance(bundle);
                 fragmentTransaction.replace(R.id.detailContent, mainFragment);
@@ -252,4 +296,5 @@ public class DetailFragment extends Fragment implements TextWatcher {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+
 }

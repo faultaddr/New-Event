@@ -11,6 +11,7 @@ public class Info extends BmobObject{
     private String Title;
     private String Content;
     private String User;
+    private String Emergency;
 
     public BmobDate getDate() {
         return Date;
@@ -56,4 +57,11 @@ public class Info extends BmobObject{
     }
 
 
+    public String getEmergency() {
+        return Emergency;
+    }
+
+    public void setEmergency(String emergency) {
+        Emergency = emergency;
+    }
 }

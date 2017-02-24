@@ -11,6 +11,7 @@ import android.app.Activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -22,6 +23,7 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.view.Window;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -31,11 +33,14 @@ import com.example.panda.newevent.Fragment.MainFragment;
 import com.example.panda.newevent.Fragment.RegisterFragment;
 import com.example.panda.newevent.MainActivity;
 import com.example.panda.newevent.R;
+import com.example.panda.newevent.tools.ACache;
 import com.example.panda.newevent.tools.JellyInterpolator;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 import cn.bmob.v3.Bmob;
 import cn.bmob.v3.BmobUser;
@@ -79,6 +84,12 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
         setContentView(R.layout.activity_login);
 
         initView();
+        ACache mCache=ACache.get(getApplication(),"User");
+        if(mCache.getAsString("username")!=null){
+            Message msg=new Message();
+            msg.what=1;
+            handler.sendMessage(msg);
+        }
     }
 
     private void initView() {
@@ -198,77 +209,92 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
         animator3.setDuration(1000);
         animator3.setInterpolator(new JellyInterpolator());
         animator3.start();
-        boolean endFlag=login(nameString,psString);
-        Log.i("endFlag",endFlag+"");
-        if(endFlag){
-            animator3.end();
 
-            Intent intent=new Intent();
-            intent.setClass(this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
-        else{
-            Intent intent=new Intent();
-            intent.setClass(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        }
+
+        boolean endFlag=login(nameString,psString);
+
+
 
     }
+    public android.os.Handler handler=new android.os.Handler()
+    {
+        @Override
+        public void handleMessage(Message msg)
+        {
 
-    private boolean login(String nameString, String psString) throws InterruptedException {
+            if(msg.what==1){
+                ACache mCache=ACache.get(getApplication(),"User");
+                String username = (String) BmobUser.getObjectByKey("username");
 
-        final String name=nameString;
-        final String ps=psString;
-        new Thread(){
-            public void run(){
-                lock.lock();
-                BmobUser bmobUser = BmobUser.getCurrentUser();
-                if(bmobUser != null){
-                    // 允许用户使用应用
-                }else{
-                    //缓存用户对象为空时， 可打开用户注册界面…
-                    //缓存用户对象为空时，可以使用当前的用户名密码登录
-                    BmobUser bu2 = new BmobUser();
-                    bu2.setUsername(name);
-                    bu2.setPassword(ps);
+                mCache.put("username",username);
 
-                    bu2.login(new SaveListener<BmobUser>() {
-
-                        @Override
-                        public void done(BmobUser bmobUser, BmobException e) {
-                            if(e==null){
-                                Toast.makeText(getApplication(),"登录成功:",Toast.LENGTH_SHORT).show();
-                                TAG=1;
-
-                                Log.i("ture","fdsa");
-                                //通过BmobUser user = BmobUser.getCurrentUser()获取登录成功后的本地用户信息
-                                //如果是自定义用户对象MyUser，可通过MyUser user = BmobUser.getCurrentUser(MyUser.class)获取自定义用户信息
-                            }else{
-                                Toast.makeText(getApplication(),"登录失败请检查用户名和密码:",Toast.LENGTH_LONG).show();
-                                TAG=0;
-
-                            }
-
-                            //
-                            Log.i("com","aaa");
-                        }
-
-                    });
-
-                    notComplete.signal();
-                }
-                lock.unlock();
+                Intent intent=new Intent();
+                intent.setClass(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+                finish();
             }
-        }.start();
-
-        if(TAG==2){
-            Log.i("dfasfds",""+TAG);
-            notComplete.await();
+            if(msg.what==0){
+                Intent intent=new Intent();
+                intent.setClass(getApplicationContext(),LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }
+            super.handleMessage(msg);
         }
 
+    };
+    private boolean login(String nameString, String psString) throws InterruptedException {
+        final String name=nameString;
+        final String ps=psString;
 
+
+                    System.out.println(Thread.currentThread().getName()+"=》进入");
+                    BmobUser bmobUser = BmobUser.getCurrentUser();
+                    ACache mCache=ACache.get(getApplication(),"User");
+                    if(bmobUser != null||(mCache.getAsString("username")!=null)){
+                        // 允许用户使用应用
+                        Message msg=new Message();
+                        msg.what=1;
+                        handler.sendMessage(msg);
+                    }else{
+                        //缓存用户对象为空时， 可打开用户注册界面…
+                        //缓存用户对象为空时，可以使用当前的用户名密码登录
+                        BmobUser bu2 = new BmobUser();
+                        bu2.setUsername(name);
+                        bu2.setPassword(ps);
+
+                        bu2.login(new SaveListener<BmobUser>() {
+
+                            @Override
+                            public void done(BmobUser bmobUser, BmobException e) {
+                                if(e==null){
+                                    Toast.makeText(getApplication(),"登录成功:",Toast.LENGTH_SHORT).show();
+                                    TAG=1;
+
+                                    System.out.println(Thread.currentThread().getName()+"休息结束");
+
+                                    Log.i("ture","fdsa");
+                                    //通过BmobUser user = BmobUser.getCurrentUser()获取登录成功后的本地用户信息
+                                    //如果是自定义用户对象MyUser，可通过MyUser user = BmobUser.getCurrentUser(MyUser.class)获取自定义用户信息
+                                }else{
+                                    Toast.makeText(getApplication(),"登录失败请检查用户名和密码:",Toast.LENGTH_LONG).show();
+                                    TAG=0;
+
+                                }
+                                Message msg=new Message();
+                                msg.what=TAG;
+                                handler.sendMessage(msg);
+                                //
+                                Log.i("com","aaa");
+                            }
+
+                        });
+
+
+                    }
+
+
+        Thread.sleep(1000);
         Log.i("TAG",TAG+"");
         return TAG==1;
     }
