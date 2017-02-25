@@ -10,6 +10,7 @@ import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.Activity;
 
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.FragmentTransaction;
@@ -68,6 +69,8 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
 
     private RelativeLayout mainToAll;
 
+    private ImageView backButton;
+
     private final Lock lock = new ReentrantLock();
 
     private Condition notComplete = lock.newCondition();
@@ -97,6 +100,8 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
         signUp=(TextView)findViewById(R.id.signup);
         progress = findViewById(R.id.layout_progress);
         mInputLayout = findViewById(R.id.input_layout);
+        backButton=(ImageView)findViewById(R.id.back);
+        backButton.setVisibility(View.INVISIBLE);
         mName = (LinearLayout) findViewById(R.id.input_layout_name);
         mPsw = (LinearLayout) findViewById(R.id.input_layout_psw);
         userId=(EditText) findViewById(R.id.userId);
@@ -134,10 +139,16 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
     public void onActivityResult(int requestCode, int resultCode, Intent data){
 
         if(requestCode==101){
+            Message msg=new Message();
+            msg.what=2;
+
             nameString=data.getStringExtra("userId");
             psString=data.getStringExtra("passWord");
-            userId.setText(nameString);
-            passWord.setText(psString);
+            Bundle bundle=new Bundle();
+            bundle.putString("userId",nameString);
+            bundle.putString("passWord",psString);
+            msg.setData(bundle);
+            handler.sendMessage(msg);
         }
     }
     private void inputAnimator(final View view, float w, float h) {
@@ -225,7 +236,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
             if(msg.what==1){
                 ACache mCache=ACache.get(getApplication(),"User");
                 String username = (String) BmobUser.getObjectByKey("username");
-
+                Log.i(">>>!!!",username);
                 mCache.put("username",username);
 
                 Intent intent=new Intent();
@@ -238,6 +249,10 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                 intent.setClass(getApplicationContext(),LoginActivity.class);
                 startActivity(intent);
                 finish();
+            }
+            if (msg.what==2){
+                userId.setText(msg.getData().getString("userId"));
+                passWord.setText(msg.getData().getString("passWord"));
             }
             super.handleMessage(msg);
         }

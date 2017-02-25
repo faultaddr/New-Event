@@ -154,9 +154,9 @@ public class MainFragment extends Fragment {
 
     private void initData() {
 
-            AsyncTask asyncTask = null;
-            asyncTask = new search();
-            asyncTask.execute();
+        AsyncTask asyncTask = null;
+        asyncTask = new search();
+        asyncTask.execute();
 
     }
 
@@ -173,13 +173,15 @@ public class MainFragment extends Fragment {
         backButton = (ImageView) parent.findViewById(R.id.backButton);
 
         title.setText("待办");
-        editButton.setVisibility(View.INVISIBLE);
-        backButton.setVisibility(View.INVISIBLE);
+        editButton.setVisibility(View.GONE);
+        backButton.setVisibility(View.GONE);
         listview = (ListView) v.findViewById(R.id.mainlistView);
         calenderView = (MaterialCalendarView) v.findViewById(calendarView);
         detailText = (TextView) v.findViewById(R.id.dateplus);
         //DetailFragment detailFragment=new DetailFragment();
         calenderView.setSelectionMode(MaterialCalendarView.SELECTION_MODE_MULTIPLE);
+
+
 
         calenderView.addDecorator(new DayViewDecorator() {
             @Override
@@ -281,8 +283,8 @@ public class MainFragment extends Fragment {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
                 String s1, s2;
-                calenderView.setSelectedDate(calendarDay);
 
+                calenderView.setSelectedDate(calendarDay);
                 Bundle bundle = new Bundle();
                 if (calendarDay.getMonth() + 1 >= 10) {
                     s1 = "" + calendarDay.getMonth() + 1;
@@ -358,33 +360,45 @@ public class MainFragment extends Fragment {
         @Override
         protected Boolean doInBackground(Object... objects) {
             int record=0;
-            ACache mCache = ACache.get(getActivity());
+            ACache mCache = ACache.get(getActivity(),"ACache");
             ACache userCache = ACache.get(getActivity(),"user");
-            if (mCache!=null&&FromTag==false) {
-                try {
-                    record=1;
-                    JSONArray titlejsonArray = mCache.getAsJSONArray("title");
-                    JSONArray idjsonArray = mCache.getAsJSONArray("id");
-                    JSONArray timejsonArray = mCache.getAsJSONArray("time");
-                    JSONArray contentjsonArray = mCache.getAsJSONArray("content");
-                    JSONArray emergencyjsonArray = mCache.getAsJSONArray("emergency");
-                    for(int i=0;i<titlejsonArray.length();i++){
-                        listTitle.add(titlejsonArray.get(i).toString());
-                        listId.add(idjsonArray.get(i).toString());
-                        listTime.add(timejsonArray.get(i).toString());
-                        listContent.add(contentjsonArray.get(i).toString());
-                        listEmergency.add(emergencyjsonArray.get(i).toString());
+
+            try {
+                mCache.getAsString("title");
+
+            }
+            catch (Exception ex){
+                mCache.clear();
+                Log.i("aaaa",ex.getMessage());
+
+            }
+            finally {
+                if (mCache != null && FromTag == false) {
+                    try {
+
+                        JSONArray titlejsonArray = mCache.getAsJSONArray("title");
+                        JSONArray idjsonArray = mCache.getAsJSONArray("id");
+                        JSONArray timejsonArray = mCache.getAsJSONArray("time");
+                        JSONArray contentjsonArray = mCache.getAsJSONArray("content");
+                        JSONArray emergencyjsonArray = mCache.getAsJSONArray("emergency");
+                        for (int i = 0; i < titlejsonArray.length(); i++) {
+                            listTitle.add(titlejsonArray.get(i).toString());
+                            listId.add(idjsonArray.get(i).toString());
+                            listTime.add(timejsonArray.get(i).toString());
+                            listContent.add(contentjsonArray.get(i).toString());
+                            listEmergency.add(emergencyjsonArray.get(i).toString());
+                        }
+                        Log.i("listTitle", listTitle.toString());
+                    } catch (Exception ex) {
+                        record = 1;
+                        Log.e("exception", ex.getMessage());
+
+                    } finally {
+                        //TAG=true;
                     }
-                    Log.i("listTitle",listTitle.toString());
-                } catch (Exception ex) {
-                    Log.e("exception", ex.getMessage());
-
-                }
-                finally {
-                    TAG=true;
-                }
-            }else {
-
+                }}
+            Log.i("record+ frometag",record+""+FromTag);
+            if(record==1||FromTag==true){
                 BmobQuery<Info> query = new BmobQuery<Info>();
 //查询playerName叫“比目”的数据
                 query.addWhereEqualTo("User", userCache.getAsString("username"));
@@ -414,21 +428,21 @@ public class MainFragment extends Fragment {
 
                                     listEmergency.add(info.getEmergency());
                                     //获得createdAt数据创建时间（注意是：createdAt，不是createAt）
-                                    ACache mCache = ACache.get(getActivity(),"Acache");
-                                    mCache.clear();
+                                    ACache mCache = ACache.get(getActivity(),"ACache");
+                                    //mCache.clear();
                                     try{
-                                    JSONArray titlejsonArray = new JSONArray(listTitle);
-                                    JSONArray idjsonArray = new JSONArray(listId);
-                                    JSONArray timejsonArray = new JSONArray(listTime);
-                                    JSONArray contentjsonArray = new JSONArray(listContent);
-                                    JSONArray emergencyjsonArray = new JSONArray(listEmergency);
-                                    //Log.i("listTitle",titlejsonArray.toString());
-                                    mCache.put("title", titlejsonArray);
-                                    mCache.put("id", idjsonArray);//保存10秒，如果超过10秒去获取这个key，将为null
-                                    //mCache.put("test_key3", "test value", 2 * ACache.TIME_DAY);//保存两天，如果超过两天去获取这个key，将为null
-                                    mCache.put("time", timejsonArray);
-                                    mCache.put("content", contentjsonArray);
-                                    mCache.put("emergency", emergencyjsonArray);
+                                        JSONArray titlejsonArray = new JSONArray(listTitle);
+                                        JSONArray idjsonArray = new JSONArray(listId);
+                                        JSONArray timejsonArray = new JSONArray(listTime);
+                                        JSONArray contentjsonArray = new JSONArray(listContent);
+                                        JSONArray emergencyjsonArray = new JSONArray(listEmergency);
+                                        //Log.i("listTitle",titlejsonArray.toString());
+                                        mCache.put("title", titlejsonArray);
+                                        mCache.put("id", idjsonArray);//保存10秒，如果超过10秒去获取这个key，将为null
+                                        //mCache.put("test_key3", "test value", 2 * ACache.TIME_DAY);//保存两天，如果超过两天去获取这个key，将为null
+                                        mCache.put("time", timejsonArray);
+                                        mCache.put("content", contentjsonArray);
+                                        mCache.put("emergency", emergencyjsonArray);
                                     }catch (Exception es){
                                         System.out.print(es.getMessage());
                                     }
@@ -466,17 +480,28 @@ public class MainFragment extends Fragment {
                 } catch (Exception e) {
                     Log.i(">>>error", e.toString());
                 }
-            }
-            if(record==0){
-            while(listContent.size()!=count||TAG==false){
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            Log.i("record",record+"");
+
+                if (record==0){
+                while(listContent.size()!=count||TAG==false){
+                    Log.i(">>>",">>>");
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }}
-            return true;
-        }
+                }
+            else {
+
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        Log.i("thread",e.getMessage());
+                    }
+                }
+
+        }return true;}
 
         @Override
         protected void onPreExecute() {

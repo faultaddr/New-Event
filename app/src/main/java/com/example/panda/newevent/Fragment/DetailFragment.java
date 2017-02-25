@@ -177,7 +177,7 @@ public class DetailFragment extends Fragment implements TextWatcher {
                 p2.setContent(s);
                 p2.setTime(detailTime);
                 p2.setEmergency(TAG+"");
-                ACache userCache = ACache.get(getActivity(),"User");
+                ACache userCache = ACache.get(getActivity().getApplication(),"User");
                 p2.setUser(userCache.getAsString("username"));
                 //TODO-LIST 1.读取已经存在的备忘详细内容
                 //TODO-LIST 2.在有详细内容时再进行修改而不是直接存为一个新的备忘事项
@@ -203,17 +203,19 @@ public class DetailFragment extends Fragment implements TextWatcher {
                         }
 
                     });
-                } else {
+                }
+
+                    else{
                     p2.save(new SaveListener<String>() {
                         @Override
                         public void done(String objectId, BmobException e) {
                             if (e == null) {
                                 Log.i("done", "done");
-                                Toast.makeText(getActivity(),"保存成功",Toast.LENGTH_LONG).show();
+                                Toast.makeText(getActivity().getApplication(),"保存成功",Toast.LENGTH_LONG).show();
                                 saved = true;
                             } else {
                                 Log.i("fail", "fail" + e);
-                                Toast.makeText(getActivity(),"保存失败",Toast.LENGTH_LONG).show();
+                                Toast.makeText(getActivity().getApplication(),"保存失败",Toast.LENGTH_LONG).show();
                             }
                         }
                     });
