@@ -361,7 +361,7 @@ public class MainFragment extends Fragment {
         protected Boolean doInBackground(Object... objects) {
             int record=0;
             ACache mCache = ACache.get(getActivity(),"ACache");
-            ACache userCache = ACache.get(getActivity(),"user");
+            ACache userCache = ACache.get(getActivity(),"User");
 
             try {
                 mCache.getAsString("title");

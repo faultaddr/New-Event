@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -97,10 +98,11 @@ public class RegisterFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Intent intent=new Intent();
-                intent.putExtra("userId",userId.getText());
-                intent.putExtra("passWord",passWord.getText());
+                intent.putExtra("userId",userId.getText().toString());
+                intent.putExtra("passWord",passWord.getText().toString());
                 intent.setClass(getActivity(), LoginActivity.class);
-                startActivityForResult(intent,101);
+                Log.i("intent",intent.getStringExtra("passWord"));
+                startActivity(intent);
             }
         });
         // Inflate the layout for this fragment

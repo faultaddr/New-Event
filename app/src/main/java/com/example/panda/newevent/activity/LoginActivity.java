@@ -87,6 +87,12 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
         setContentView(R.layout.activity_login);
 
         initView();
+        Intent intent=getIntent();
+        Log.i("intent",intent.toString());
+        if(intent!=null) {
+            userId.setText(intent.getStringExtra("userId"));
+            passWord.setText(intent.getStringExtra("passWord"));
+        }
         ACache mCache=ACache.get(getApplication(),"User");
         if(mCache.getAsString("username")!=null){
             Message msg=new Message();
@@ -120,6 +126,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                 fragmentTransaction.show(registerFragment);
             }
         });
+
     }
 
     @Override
@@ -138,19 +145,21 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
 
-        if(requestCode==101){
-            Message msg=new Message();
-            msg.what=2;
 
+
+            Log.i("daole","fsdafs");
             nameString=data.getStringExtra("userId");
             psString=data.getStringExtra("passWord");
             Bundle bundle=new Bundle();
             bundle.putString("userId",nameString);
             bundle.putString("passWord",psString);
+            Message msg=new Message();
+            msg.what=2;
             msg.setData(bundle);
+            Log.i("msgg",msg.toString());
             handler.sendMessage(msg);
         }
-    }
+
     private void inputAnimator(final View view, float w, float h) {
 
         AnimatorSet set = new AnimatorSet();
@@ -251,6 +260,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                 finish();
             }
             if (msg.what==2){
+                Log.i("msg",""+msg.getData().getString("userId")+msg.getData().getString("passWord"));
                 userId.setText(msg.getData().getString("userId"));
                 passWord.setText(msg.getData().getString("passWord"));
             }
@@ -264,9 +274,9 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
 
 
                     System.out.println(Thread.currentThread().getName()+"=》进入");
-                    BmobUser bmobUser = BmobUser.getCurrentUser();
+                    //BmobUser bmobUser = BmobUser.getCurrentUser();
                     ACache mCache=ACache.get(getApplication(),"User");
-                    if(bmobUser != null||(mCache.getAsString("username")!=null)){
+                    if((mCache.getAsString("username")!=null)){
                         // 允许用户使用应用
                         Message msg=new Message();
                         msg.what=1;
@@ -309,7 +319,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                     }
 
 
-        Thread.sleep(1000);
+        Thread.sleep(200);
         Log.i("TAG",TAG+"");
         return TAG==1;
     }
