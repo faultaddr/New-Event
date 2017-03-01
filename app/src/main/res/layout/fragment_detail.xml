@@ -4,6 +4,39 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.example.panda.newevent.Fragment.DetailFragment">
+    <LinearLayout
+        android:id="@+id/titlebar"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+
+        android:orientation="horizontal"
+        android:background="#9AFF9A"
+        android:focusable="true"
+        >
+
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_weight="0.5"
+
+            android:layout_width="wrap_content"
+            android:src="@drawable/back"
+            android:layout_height="match_parent"/>
+        <TextView
+            android:id="@+id/title"
+            android:layout_weight="1.5"
+            android:gravity="center"
+            android:text="标题"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+        <ImageView
+            android:id="@+id/editButton"
+            android:layout_weight="0.5"
+
+            android:layout_width="wrap_content"
+            android:src="@drawable/save"
+            android:layout_height="match_parent"/>
+
+    </LinearLayout>
     <EditText
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"

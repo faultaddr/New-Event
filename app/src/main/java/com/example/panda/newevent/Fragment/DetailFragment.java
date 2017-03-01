@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -123,6 +124,9 @@ public class DetailFragment extends Fragment implements TextWatcher {
     };
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+
+
         super.onCreate(savedInstanceState);
     }
 
@@ -130,9 +134,15 @@ public class DetailFragment extends Fragment implements TextWatcher {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-
+        View main=getActivity().findViewById(R.id.activity_main);
+        main.setSystemUiVisibility(View.INVISIBLE);
+        View appbar=getActivity().findViewById(R.id.toolbar);
+        appbar.setVisibility(View.GONE);
+        View mainFragment1=getActivity().findViewById(R.id.content_navigation);
+        main.postInvalidate();
         View v = inflater.inflate(R.layout.fragment_detail, container, false);
-        View parent = (LinearLayout) getActivity().findViewById(R.id.titlebar);
+        View parent = (LinearLayout)v.findViewById(R.id.titlebar);
+        //parent.setVisibility(View.VISIBLE);
         title = (TextView) parent.findViewById(R.id.title);
         editButton = (ImageView) parent.findViewById(R.id.editButton);
         backButton = (ImageView) parent.findViewById(R.id.backButton);
@@ -222,7 +232,7 @@ public class DetailFragment extends Fragment implements TextWatcher {
                 }
             }
         });
-
+        //appbar.setVisibility(View.VISIBLE);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -237,15 +247,23 @@ public class DetailFragment extends Fragment implements TextWatcher {
                     bundle.putString("emergency",TAG+"");
                     bundle.putBoolean("isFromSaved",true);
                 }
+                View main=getActivity().findViewById(R.id.activity_main);
+                main.setSystemUiVisibility(View.VISIBLE);
+                View appbar=getActivity().findViewById(R.id.toolbar);
+                appbar.setVisibility(View.VISIBLE);
                 MainFragment mainFragment = MainFragment.newInstance(bundle);
                 fragmentTransaction.replace(R.id.detailContent, mainFragment);
                 fragmentTransaction.show(mainFragment);
                 fragmentTransaction.hide(getTargetFragment());
+
                 fragmentTransaction.commit();
             }
         });
 
         return v;
+    }
+
+    private void setSupportActionBar(Toolbar toolbar) {
     }
 
     // TODO: Rename method, update argument and hook method into UI event

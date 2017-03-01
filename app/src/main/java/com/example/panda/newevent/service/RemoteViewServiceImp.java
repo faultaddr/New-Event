@@ -2,6 +2,8 @@ package com.example.panda.newevent.service;
 
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -115,9 +117,16 @@ public class RemoteViewServiceImp extends RemoteViewsService {
 
             Log.i("requestVonter",requestContext.getPackageName().toString());
             Log.i("DATA___",data.get(position).getWidgetTime()+"<<>>"+position);
-            remoteViews.setTextViewText(R.id.widgetTime, data.get(position).getWidgetTime());
-            remoteViews.setTextViewText(R.id.widgetTitle,data.get(position).getWidgetTitle());
+            remoteViews.setTextViewText(R.id.widgetTime, "12344");
+            //remoteViews.setTextViewText(R.id.widgetTitle,data.get(position).getWidgetTitle());
             remoteViews.setTextViewText(R.id.widgetTitle,"12324");
+
+
+            Intent initialUpdateIntent = new Intent(
+                    AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            initialUpdateIntent
+                    .setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            sendBroadcast(initialUpdateIntent);
             Log.i(">>>>data",""+remoteViews);
             Intent intent = new Intent(NewAppWidget.ITEMCLICK);
             intent.putExtra("position", position);
@@ -132,7 +141,7 @@ public class RemoteViewServiceImp extends RemoteViewsService {
 
         @Override
         public int getViewTypeCount() {
-            return 1;
+            return 2;
         }
 
         @Override

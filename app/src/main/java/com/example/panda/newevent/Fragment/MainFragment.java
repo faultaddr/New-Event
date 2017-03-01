@@ -11,11 +11,14 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -24,6 +27,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +39,7 @@ import com.example.panda.newevent.tools.ACache;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
+import com.prolificinteractive.materialcalendarview.CalendarMode;
 import com.prolificinteractive.materialcalendarview.DayViewDecorator;
 import com.prolificinteractive.materialcalendarview.DayViewFacade;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
@@ -83,6 +88,8 @@ public class MainFragment extends Fragment {
     private ImageView editButton;
     private TextView detailText;
     private TextView datePlus;
+    private ScrollView scrollView;
+
     static MainFragment fragment;
     //数组声明
     private static ArrayList<String> listTime = new ArrayList<>();//时间
@@ -94,6 +101,7 @@ public class MainFragment extends Fragment {
     private static int count=0;//来进行锁控制
     private static boolean TAG;
     private static boolean TAGofNull;
+    static boolean TAG_CHANGE;
     private static boolean FromTag;
     List<CalendarDay> calendar = new ArrayList<>();
     DetailFragment detailFragment = DetailFragment.newInstance(new Bundle(), fragment);
@@ -167,15 +175,17 @@ public class MainFragment extends Fragment {
 
 
         View v = inflater.inflate(R.layout.main, container, false);
-        View parent = (LinearLayout) getActivity().findViewById(R.id.titlebar);
-        title = (TextView) parent.findViewById(R.id.title);
-        editButton = (ImageView) parent.findViewById(R.id.editButton);
-        backButton = (ImageView) parent.findViewById(R.id.backButton);
-
-        title.setText("待办");
-        editButton.setVisibility(View.GONE);
-        backButton.setVisibility(View.GONE);
+//        View parent = (LinearLayout) getActivity().findViewById(R.id.titlebar);
+//        //parent.setVisibility(View.VISIBLE);
+//        title = (TextView) parent.findViewById(R.id.title);
+//        editButton = (ImageView) parent.findViewById(R.id.editButton);
+//        backButton = (ImageView) parent.findViewById(R.id.backButton);
+//
+//        title.setText("待办");
+//        editButton.setVisibility(View.GONE);
+//        backButton.setVisibility(View.GONE);
         listview = (ListView) v.findViewById(R.id.mainlistView);
+        scrollView=(ScrollView)v.findViewById(R.id.scrollView);
         calenderView = (MaterialCalendarView) v.findViewById(calendarView);
         detailText = (TextView) v.findViewById(R.id.dateplus);
         //DetailFragment detailFragment=new DetailFragment();
@@ -201,6 +211,7 @@ public class MainFragment extends Fragment {
         calenderView.setSelectedDate(CalendarDay.today());
         Log.i(">>>today", CalendarDay.today() + "");
         //List<CalendarDay> calenderDay = calenderView.getSelectedDates();
+        detailText.setText(CalendarDay.today().getYear()+" 年 "+(CalendarDay.today().getMonth()+1)+" 月 "+CalendarDay.today().getDay()+" 日 ");
 
         calenderView.setOnDateChangedListener(new OnDateSelectedListener() {
             @Override
@@ -225,6 +236,7 @@ public class MainFragment extends Fragment {
 */
 
 
+
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -246,8 +258,28 @@ public class MainFragment extends Fragment {
                 fragmentTransaction.hide(getTargetFragment());
             }
         });
+        listview.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
 
+                if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
+                calenderView.state().edit().setCalendarDisplayMode(CalendarMode.WEEKS).commit();
+                calenderView.setTopbarVisible(false);
+                }
 
+                return true;
+            }
+        });
+        scrollView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent.getAction()==MotionEvent.ACTION_UP){
+                    calenderView.state().edit().setCalendarDisplayMode(CalendarMode.MONTHS).commit();
+                    calenderView.setTopbarVisible(true);
+                }
+                return false;
+            }
+        });
         return v;
     }
 
