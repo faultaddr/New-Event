@@ -7,22 +7,28 @@ import cn.bmob.v3.BmobUser;
  */
 
 public class MyUser extends BmobUser {
-    private String userName;
-    private String userPassWord;
-
-    public String getUserName() {
-        return userName;
+    private String username;
+    private String password;
+    public String getPassword() {
+        return password;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    @Override
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public String getUserPassWord() {
-        return userPassWord;
+    @Override
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserPassWord(String userPassWord) {
-        this.userPassWord = userPassWord;
+    @Override
+    public void setUsername(String username) {
+        this.username = username;
     }
+
+
+
+
 }

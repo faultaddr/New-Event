@@ -270,16 +270,16 @@ public class MainFragment extends Fragment {
                 return true;
             }
         });
-        scrollView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if(motionEvent.getAction()==MotionEvent.ACTION_UP){
-                    calenderView.state().edit().setCalendarDisplayMode(CalendarMode.MONTHS).commit();
-                    calenderView.setTopbarVisible(true);
-                }
-                return false;
-            }
-        });
+//        scrollView.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View view, MotionEvent motionEvent) {
+//                if(motionEvent.getAction()==MotionEvent.ACTION_UP){
+//                    calenderView.state().edit().setCalendarDisplayMode(CalendarMode.MONTHS).commit();
+//                    calenderView.setTopbarVisible(true);
+//                }
+//                return false;
+//            }
+//        });
         return v;
     }
 
@@ -407,7 +407,7 @@ public class MainFragment extends Fragment {
             finally {
                 if (mCache != null && FromTag == false) {
                     try {
-
+                        Log.i(">>>>!!!","1");
                         JSONArray titlejsonArray = mCache.getAsJSONArray("title");
                         JSONArray idjsonArray = mCache.getAsJSONArray("id");
                         JSONArray timejsonArray = mCache.getAsJSONArray("time");
@@ -426,7 +426,7 @@ public class MainFragment extends Fragment {
                         Log.e("exception", ex.getMessage());
 
                     } finally {
-                        //TAG=true;
+
                     }
                 }}
             Log.i("record+ frometag",record+""+FromTag);
@@ -481,7 +481,7 @@ public class MainFragment extends Fragment {
                                 }
 
                             } else {
-                                ACache mCache = ACache.get(getActivity());
+                                ACache mCache = ACache.get(getActivity(),"ACache");
                                 if (mCache != null) {
                                     try {
 
@@ -551,17 +551,23 @@ public class MainFragment extends Fragment {
                     int a = Integer.valueOf(listTime.get(i).substring(0, 4));
                     int b = Integer.valueOf(listTime.get(i).substring(4, 6));
                     int c = Integer.valueOf(listTime.get(i).substring(6, 8));
-                    CalendarDay currentDay = CalendarDay.from(a, b-1 , c);
+                    CalendarDay currentDay;
+                    if(b!=1){
+                    currentDay = CalendarDay.from(a, b-1 , c);}
+                    else{
+                        currentDay = CalendarDay.from(a, b , c);}
                     Log.i(">>>>>", "" + currentDay);
                     calenderView.setDateSelected(currentDay, true);
                     calendar.add(currentDay);
-                    MyListAdapter myListAdapter = new MyListAdapter(listId, listTime, listTitle, listContent,listEmergency, getActivity());
 
-                    listview.setAdapter(myListAdapter);
-                    setListViewHeight(listview);
                 }
             } catch (Exception e) {
                 Log.i(">>>error", e.toString());
+            }finally {
+                MyListAdapter myListAdapter = new MyListAdapter(listId, listTime, listTitle, listContent,listEmergency, getActivity());
+
+                listview.setAdapter(myListAdapter);
+                setListViewHeight(listview);
             }
 
 

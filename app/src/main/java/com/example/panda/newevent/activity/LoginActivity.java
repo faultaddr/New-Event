@@ -11,6 +11,7 @@ import android.app.Activity;
 
 import android.content.Intent;
 import android.media.Image;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.FragmentTransaction;
@@ -34,6 +35,7 @@ import com.example.panda.newevent.Fragment.MainFragment;
 import com.example.panda.newevent.Fragment.RegisterFragment;
 import com.example.panda.newevent.MainActivity;
 import com.example.panda.newevent.R;
+import com.example.panda.newevent.database.MyUser;
 import com.example.panda.newevent.tools.ACache;
 import com.example.panda.newevent.tools.JellyInterpolator;
 
@@ -87,11 +89,28 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
         setContentView(R.layout.activity_login);
 
         initView();
-        Intent intent=getIntent();
-        Log.i("intent",intent.toString());
-        if(intent!=null) {
+
+
+        if(getIntent()!=null) {
+            Intent intent=getIntent();
+            Log.i("intent",intent.toString());
             userId.setText(intent.getStringExtra("userId"));
             passWord.setText(intent.getStringExtra("passWord"));
+            nameString=intent.getStringExtra("userId");
+            psString=intent.getStringExtra("passWord");
+//            Bundle bundle=new Bundle();
+//            bundle.putString("userId",nameString);
+//            bundle.putString("passWord",psString);
+//            Message msg=new Message();
+//            msg.what=2;
+//            msg.setData(bundle);
+//            Log.i("msgg",msg.toString());
+//            handler.sendMessage(msg);
+            if(nameString!=null&&psString!=null){
+                AsyncTask asyncTask = null;
+                asyncTask = new register();
+                asyncTask.execute();
+            }
         }
         ACache mCache=ACache.get(getApplication(),"User");
         if(mCache.getAsString("username")!=null){
@@ -150,14 +169,9 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
             Log.i("daole","fsdafs");
             nameString=data.getStringExtra("userId");
             psString=data.getStringExtra("passWord");
-            Bundle bundle=new Bundle();
-            bundle.putString("userId",nameString);
-            bundle.putString("passWord",psString);
-            Message msg=new Message();
-            msg.what=2;
-            msg.setData(bundle);
-            Log.i("msgg",msg.toString());
-            handler.sendMessage(msg);
+
+
+
         }
 
     private void inputAnimator(final View view, float w, float h) {
@@ -263,11 +277,15 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
                 Log.i("msg",""+msg.getData().getString("userId")+msg.getData().getString("passWord"));
                 userId.setText(msg.getData().getString("userId"));
                 passWord.setText(msg.getData().getString("passWord"));
+                //register(msg.getData().getString("userId"),msg.getData().getString("passWord"));
             }
             super.handleMessage(msg);
         }
 
     };
+
+
+
     private boolean login(String nameString, String psString) throws InterruptedException {
         final String name=nameString;
         final String ps=psString;
@@ -322,5 +340,29 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
         Thread.sleep(200);
         Log.i("TAG",TAG+"");
         return TAG==1;
+    }
+    class register extends AsyncTask<Object, Void, Boolean>{
+
+        @Override
+        protected Boolean doInBackground(Object... objects) {
+            Log.i(">>>user","tue");
+            BmobUser bu = new BmobUser();
+            bu.setUsername(nameString);
+            bu.setPassword(psString);
+            //bu.setEmail("");
+//注意：不能用save方法进行注册
+            bu.signUp(new SaveListener<BmobUser>() {
+                @Override
+                public void done(BmobUser bmobUser, BmobException e) {
+                    if(e==null){
+                        Toast.makeText(getApplication(),"注册成功:" ,Toast.LENGTH_LONG).show();
+                    }else{
+                        Toast.makeText(getApplication(),"注册失败 用户名已被注册 或 密码不符合规定:" ,Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+
+            return true;
+        }
     }
 }

@@ -22,7 +22,7 @@ public class NewAppWidget extends AppWidgetProvider {
     public static final String ITEMCLICK = "com.xinxue.action.TYPE_LIST";
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-
+        super.onUpdate(context, appWidgetManager, appWidgetIds);
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.new_app_widget);
 
 //绑定service用来填充listview中的视图
@@ -33,10 +33,11 @@ public class NewAppWidget extends AppWidgetProvider {
         Intent intent1 = new Intent(ITEMCLICK);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 1, intent1, PendingIntent.FLAG_CANCEL_CURRENT);
         remoteViews.setPendingIntentTemplate(R.id.listviewWidget, pendingIntent);
-
+        appWidgetManager.partiallyUpdateAppWidget(appWidgetIds,remoteViews);
         //如果你添加了多个实例的情况下需要下面的处理
         appWidgetManager.updateAppWidget(appWidgetIds, remoteViews);
-        super.onUpdate(context, appWidgetManager, appWidgetIds);
+        //appWidgetManager.updateAppWidget(appWidgetIds, remoteViews);
+
     }
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -44,12 +45,9 @@ public class NewAppWidget extends AppWidgetProvider {
         if (intent.getAction().equals(ITEMCLICK)) {
             Toast.makeText(context, intent.getIntExtra("position", 0) + "", Toast.LENGTH_SHORT).show();
         }
-        if (intent.getAction().equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE)) {
-            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-            ComponentName thisAppWidget = new ComponentName(context.getPackageName(), NewAppWidget.class.getName());
-            int[] appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidget);
-            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds,  R.id.listviewWidget);
-            Log.e("finally after a whole", "working :");
+        if (intent.getAction().equals(BTNACTION)) {
+
         }
+
     }
 }
