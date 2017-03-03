@@ -3,6 +3,7 @@ package com.example.panda.newevent.Fragment;
 import android.app.ActionBar;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.PixelFormat;
@@ -101,13 +102,17 @@ public class MainFragment extends Fragment {
     private static int count=0;//来进行锁控制
     private static boolean TAG;
     private static boolean TAGofNull;
-    static boolean TAG_CHANGE;
+    static  boolean TAG_CHANGE_STATUS=true;
     private static boolean FromTag;
     List<CalendarDay> calendar = new ArrayList<>();
     DetailFragment detailFragment = DetailFragment.newInstance(new Bundle(), fragment);
 
     private OnFragmentInteractionListener mListener;
     private Bundle newBundle = new Bundle();
+
+    //回调接口
+    private MyListener Listener;
+
     public MainFragment() {
         // Required empty public constructor
     }
@@ -188,6 +193,8 @@ public class MainFragment extends Fragment {
         scrollView=(ScrollView)v.findViewById(R.id.scrollView);
         calenderView = (MaterialCalendarView) v.findViewById(calendarView);
         detailText = (TextView) v.findViewById(R.id.dateplus);
+        //View main=inflater.inflate(R.layout.activity_main,null);
+
         //DetailFragment detailFragment=new DetailFragment();
         calenderView.setSelectionMode(MaterialCalendarView.SELECTION_MODE_MULTIPLE);
 
@@ -258,18 +265,7 @@ public class MainFragment extends Fragment {
                 fragmentTransaction.hide(getTargetFragment());
             }
         });
-        listview.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
 
-                if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
-                calenderView.state().edit().setCalendarDisplayMode(CalendarMode.WEEKS).commit();
-                calenderView.setTopbarVisible(false);
-                }
-
-                return true;
-            }
-        });
 //        scrollView.setOnTouchListener(new View.OnTouchListener() {
 //            @Override
 //            public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -293,6 +289,12 @@ public class MainFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        try {
+            Listener = (MyListener)context;
+        }catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().getClass().getName()
+                    +" must implements interface MyListener");
+        }
 
 
     }
@@ -605,5 +607,10 @@ public class MainFragment extends Fragment {
         params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
         listView.setLayoutParams(params);
     }
+    /*接口*/
+    public interface MyListener{
+        public boolean showMessage(boolean index);
+    }
+
 }
 

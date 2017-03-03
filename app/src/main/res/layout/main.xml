@@ -47,10 +47,12 @@
                 />
             <ListView
                 android:id="@+id/mainlistView"
-                android:layout_weight="1"
-                android:background="#FFFFF0"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:fadingEdge="none"
+                android:divider="#00000000"
+                android:scrollingCache="false"
+                android:background="@drawable/listitem"
                 android:layout_below="@+id/calendarView"
 
            />

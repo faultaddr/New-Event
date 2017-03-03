@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widgetitem"
+    android:id="@+id/widgetitem1"
     android:layout_width="match_parent"
     android:layout_height="50dp"
     android:orientation="horizontal"
@@ -17,6 +17,7 @@
             android:layout_height="wrap_content"
             android:textSize="20dp"
             android:gravity="center"
+            android:textColor="#ff0011"
             android:text="sbsbsb" />
 
         <TextView
@@ -26,6 +27,7 @@
             android:textSize="20dp"
             android:gravity="center"
             android:layout_height="wrap_content"
+            android:textColor="#09A001"
             android:text="jisuhini"
             />
     </LinearLayout>
