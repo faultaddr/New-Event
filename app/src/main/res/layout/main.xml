@@ -45,17 +45,17 @@
                 android:layout_height="20dp"
                 android:text="111"
                 />
-            <ListView
+
+            <com.baoyz.swipemenulistview.SwipeMenuListView
                 android:id="@+id/mainlistView"
                 android:layout_width="fill_parent"
-                android:layout_height="match_parent"
-                android:fadingEdge="none"
-                android:divider="#00000000"
-                android:scrollingCache="false"
-                android:background="@drawable/listitem"
-                android:layout_below="@+id/calendarView"
-
-           />
+                android:layout_height="fill_parent"
+                android:layout_marginBottom="10dp"
+                android:cacheColorHint="#00000000"
+                android:divider="#2A4562"
+                android:dividerHeight="4dp"
+                android:drawSelectorOnTop="false"
+                android:listSelector="#264365" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

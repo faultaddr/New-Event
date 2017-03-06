@@ -5,8 +5,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -18,6 +20,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,6 +35,10 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baoyz.swipemenulistview.SwipeMenu;
+import com.baoyz.swipemenulistview.SwipeMenuCreator;
+import com.baoyz.swipemenulistview.SwipeMenuItem;
+import com.baoyz.swipemenulistview.SwipeMenuListView;
 import com.example.panda.newevent.R;
 import com.example.panda.newevent.adapter.MyListAdapter;
 import com.example.panda.newevent.database.Info;
@@ -63,9 +70,11 @@ import cn.bmob.v3.BmobQuery;
 import cn.bmob.v3.exception.BmobException;
 import cn.bmob.v3.listener.FindListener;
 import cn.bmob.v3.listener.SaveListener;
+import cn.bmob.v3.listener.UpdateListener;
 
 import static android.view.View.GONE;
 import static android.view.View.getDefaultSize;
+import static cn.bmob.v3.Bmob.getApplicationContext;
 import static com.example.panda.newevent.R.id.calendarView;
 import static com.example.panda.newevent.R.id.dateplus;
 import static com.example.panda.newevent.R.id.time;
@@ -81,7 +90,7 @@ import static com.example.panda.newevent.R.id.time;
 public class MainFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private ListView listview;
+    private SwipeMenuListView listview;
     private MaterialCalendarView calenderView;
     private FragmentTransaction fragmentTransaction;
     private ImageView backButton;
@@ -163,6 +172,10 @@ public class MainFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initData();
+
+
+        // Left
+        //listview.setSwipeDirection(SwipeMenuListView.DIRECTION_LEFT);
     }
 
     private void initData() {
@@ -189,7 +202,94 @@ public class MainFragment extends Fragment {
 //        title.setText("待办");
 //        editButton.setVisibility(View.GONE);
 //        backButton.setVisibility(View.GONE);
-        listview = (ListView) v.findViewById(R.id.mainlistView);
+        listview = (SwipeMenuListView) v.findViewById(R.id.mainlistView);
+
+        // step 1. create a MenuCreator
+        SwipeMenuCreator creator = new SwipeMenuCreator()
+        {
+            @Override
+            public void create(SwipeMenu menu)
+            {
+                // create "open" item
+
+
+                // create "delete" item
+                SwipeMenuItem deleteItem = new SwipeMenuItem(getApplicationContext());
+                // set item background
+                deleteItem.setBackground(new ColorDrawable(Color.rgb(0xF9, 0x3F, 0x25)));
+                // set item width
+                deleteItem.setWidth(dp2px(90));
+                // set a icon
+                deleteItem.setIcon(R.drawable.ic_delete);
+                // add to menu
+                menu.addMenuItem(deleteItem);
+            }
+        };
+
+        // set creator
+        listview.setMenuCreator(creator);
+
+        listview.setOnMenuItemClickListener(new SwipeMenuListView.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(final int position, SwipeMenu menu, int index) {
+
+                listview.smoothOpenMenu(position);
+
+                switch (index) {
+                    case 0:
+                        // open
+                        Info info=new Info();
+                        info.setObjectId(listId.get(position));
+  // 删除GameScore对象中的score字段
+                        info.delete(new UpdateListener() {
+                            @Override
+                            public void done(BmobException e) {
+                                if(e==null){
+                                    Log.i("bmob","成功");
+                                    listId.remove(position);
+                                    listEmergency.remove(position);
+                                    listTitle.remove(position);
+                                    listContent.remove(position);
+                                    listTime.remove(position);
+                                    ACache mCache = ACache.get(getActivity(),"ACache");
+                                    mCache.clear();
+                                    MyListAdapter myListAdapter = new MyListAdapter(listId, listTime, listTitle, listContent,listEmergency, getActivity());
+
+                                    listview.setAdapter(myListAdapter);
+                                    setListViewHeight(listview);
+                                    listview.postInvalidate();
+                                }else{
+                                    ACache mCache = ACache.get(getActivity(),"ACache");
+                                    mCache.clear();
+                                    Log.i("bmob","失败："+e.getMessage()+","+e.getErrorCode());
+                                }
+                            }
+                        });
+                        break;
+                }
+                // false : close the menu; true : not close the menu
+                return false;
+            }
+        });
+
+        // Right
+        // set SwipeListener
+        listview.setOnSwipeListener(new SwipeMenuListView.OnSwipeListener()
+        {
+            @Override
+            public void onSwipeStart(int position)
+            {
+                // swipe start
+            }
+
+            @Override
+            public void onSwipeEnd(int position)
+            {
+                // swipe end
+            }
+        });
+        listview.setSwipeDirection(SwipeMenuListView.DIRECTION_LEFT);
+
         scrollView=(ScrollView)v.findViewById(R.id.scrollView);
         calenderView = (MaterialCalendarView) v.findViewById(calendarView);
         detailText = (TextView) v.findViewById(R.id.dateplus);
@@ -244,27 +344,27 @@ public class MainFragment extends Fragment {
 
 
 
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-
-                newBundle.putString("time", listTime.get(i));
-                newBundle.putString("objectId", listId.get(i));
-                newBundle.putString("title", listTitle.get(i));
-                newBundle.putString("content", listContent.get(i));
-                newBundle.putBoolean("isFromList",true);
-                DetailFragment detailFragment = DetailFragment.newInstance(newBundle, fragment);
-                fragmentTransaction.add(R.id.detailContent, detailFragment);
-
-                listview.setVisibility(View.GONE);
-                calenderView.setVisibility(View.GONE);
-
-                fragmentTransaction.show(detailFragment);
-                fragmentTransaction.commitAllowingStateLoss();
-                fragmentTransaction.hide(getTargetFragment());
-            }
-        });
+//        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                fragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+//
+//                newBundle.putString("time", listTime.get(i));
+//                newBundle.putString("objectId", listId.get(i));
+//                newBundle.putString("title", listTitle.get(i));
+//                newBundle.putString("content", listContent.get(i));
+//                newBundle.putBoolean("isFromList",true);
+//                DetailFragment detailFragment = DetailFragment.newInstance(newBundle, fragment);
+//                fragmentTransaction.add(R.id.detailContent, detailFragment);
+//
+//                listview.setVisibility(View.GONE);
+//                calenderView.setVisibility(View.GONE);
+//
+//                fragmentTransaction.show(detailFragment);
+//                fragmentTransaction.commitAllowingStateLoss();
+//                fragmentTransaction.hide(getTargetFragment());
+//            }
+//        });
 
 //        scrollView.setOnTouchListener(new View.OnTouchListener() {
 //            @Override
@@ -277,6 +377,10 @@ public class MainFragment extends Fragment {
 //            }
 //        });
         return v;
+    }
+    private int dp2px(int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
+                getResources().getDisplayMetrics());
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -361,6 +465,7 @@ public class MainFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
+                calenderView.setDateSelected(calendarDay,false);
                 //calenderView.setSelectedDate(CalendarDay.today());
             }
         });
@@ -461,6 +566,7 @@ public class MainFragment extends Fragment {
                                     listContent.add(info.getContent());
 
                                     listEmergency.add(info.getEmergency());
+                                }
                                     //获得createdAt数据创建时间（注意是：createdAt，不是createAt）
                                     ACache mCache = ACache.get(getActivity(),"ACache");
                                     //mCache.clear();
@@ -480,7 +586,7 @@ public class MainFragment extends Fragment {
                                     }catch (Exception es){
                                         System.out.print(es.getMessage());
                                     }
-                                }
+
 
                             } else {
                                 ACache mCache = ACache.get(getActivity(),"ACache");
@@ -514,19 +620,19 @@ public class MainFragment extends Fragment {
                 } catch (Exception e) {
                     Log.i(">>>error", e.toString());
                 }
-            Log.i("record",record+"");
+                Log.i("record",record+"");
 
                 if (record==0){
-                while(listContent.size()!=count||TAG==false){
-                    Log.i(">>>",">>>");
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    while(listContent.size()!=count||TAG==false){
+                        Log.i(">>>",">>>");
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
-                }
-            else {
+                else {
 
                     try {
                         Thread.sleep(3000);
@@ -535,7 +641,8 @@ public class MainFragment extends Fragment {
                     }
                 }
 
-        }return true;}
+            }
+            return true;}
 
         @Override
         protected void onPreExecute() {
@@ -555,11 +662,25 @@ public class MainFragment extends Fragment {
                     int c = Integer.valueOf(listTime.get(i).substring(6, 8));
                     CalendarDay currentDay;
                     if(b!=1){
-                    currentDay = CalendarDay.from(a, b-1 , c);}
+                        currentDay = CalendarDay.from(a, b-1 , c);}
                     else{
                         currentDay = CalendarDay.from(a, b , c);}
                     Log.i(">>>>>", "" + currentDay);
                     calenderView.setDateSelected(currentDay, true);
+//                    switch (listEmergency.get(i)){
+//                        case "0":
+//                            calenderView.setSelectionColor(Color.RED);
+//                        break;
+//                        case "1":
+//                            calenderView.setSelectionColor(Color.YELLOW);
+//                            break;
+//                        case "2":
+//                            calenderView.setSelectionColor(Color.GREEN);
+//                            break;
+//                        default:
+//                            calenderView.setSelectionColor(Color.YELLOW);
+//                            break;
+//                    }
                     calendar.add(currentDay);
 
                 }
@@ -570,6 +691,7 @@ public class MainFragment extends Fragment {
 
                 listview.setAdapter(myListAdapter);
                 setListViewHeight(listview);
+                listview.postInvalidate();
             }
 
 

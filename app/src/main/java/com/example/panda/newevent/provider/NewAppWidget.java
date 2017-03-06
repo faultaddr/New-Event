@@ -7,9 +7,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.ListView;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import com.baoyz.swipemenulistview.SwipeMenuListView;
 import com.example.panda.newevent.MainActivity;
 import com.example.panda.newevent.R;
 import com.example.panda.newevent.service.RemoteViewServiceImp;
@@ -26,7 +28,6 @@ public class NewAppWidget extends AppWidgetProvider {
         for (int appWidgetId:appWidgetIds) {
             // 获取AppWidget对应的视图
             RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.new_app_widget);
-
             Intent intent1 = new Intent(ITEMCLICK);
             PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 1, intent1, PendingIntent.FLAG_CANCEL_CURRENT);
             rv.setPendingIntentTemplate(R.id.listviewWidget, pendingIntent);
@@ -44,8 +45,6 @@ public class NewAppWidget extends AppWidgetProvider {
         super.onReceive(context, intent);
         if (intent.getAction().equals(ITEMCLICK)) {
             Toast.makeText(context, intent.getIntExtra("position", 0) + "", Toast.LENGTH_SHORT).show();
-
-
         }
 
 

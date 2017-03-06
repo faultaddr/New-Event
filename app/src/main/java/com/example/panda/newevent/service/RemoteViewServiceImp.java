@@ -115,7 +115,6 @@ public class RemoteViewServiceImp extends RemoteViewsService {
         @Override
         public RemoteViews getViewAt(int position) {
             RemoteViews remoteViews = new RemoteViews(requestContext.getPackageName(), R.layout.widgetitem);
-
             Log.i("requestVonter",requestContext.getPackageName().toString());
             Log.i("DATA___",data.get(position).getWidgetTime()+"<<>>"+position);
             //remoteViews.setTextViewText(R.id.widgetTime, "12344");
@@ -124,6 +123,7 @@ public class RemoteViewServiceImp extends RemoteViewsService {
             Log.i(">>>>data",""+remoteViews);
             Intent intent = new Intent(NewAppWidget.ITEMCLICK);
             intent.putExtra("position", position);
+            intent.putExtra("view",remoteViews);
             remoteViews.setOnClickFillInIntent(R.id.widgetitem1, intent);
             return remoteViews;
         }
